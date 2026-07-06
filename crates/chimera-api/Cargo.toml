@@ -1,0 +1,27 @@
+[package]
+name = "chimera-api"
+version = "1.0.0"
+edition = "2021"
+description = "Reverse-engineered ChimeraTool API client + open alternatives for ChimeraRS"
+authors = ["Open Source Community"]
+
+[dependencies]
+chimera-core = { path = "../chimera-core" }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+log = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+tokio = { workspace = true }
+reqwest = { workspace = true }
+sha2 = { workspace = true }
+sha1 = { workspace = true }
+hmac = { workspace = true }
+hex = { workspace = true }
+base64 = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+rand = { workspace = true }
+aes = { workspace = true }
+bytes = { workspace = true }
+dirs = { workspace = true }

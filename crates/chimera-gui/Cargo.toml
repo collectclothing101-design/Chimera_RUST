@@ -1,0 +1,74 @@
+[package]
+name = "chimera-gui"
+version = "1.3.13"
+edition = "2021"
+description = "ChimeraRS — Professional Mobile Device Repair Tool (GUI) — macOS 10.14.6+ x86_64"
+authors = ["Open Source Community"]
+
+[[bin]]
+name = "chimera"
+path = "src/main.rs"
+
+[dependencies]
+qrcode = { version = "0.14", features = ["svg"] }
+chimera-sony = { path = "../chimera-sony" }
+ssh2 = { version = "0.9", features = ["vendored-openssl"] }
+reqwest = { workspace = true }
+webbrowser = "1.2"
+sha2       = { workspace = true }
+sha1       = { workspace = true }
+md-5       = { workspace = true }
+hmac       = { workspace = true }
+crc32fast  = { workspace = true }
+hostname   = "0.4"
+# Internal crates
+chimera-core     = { path = "../chimera-core" }
+chimera-adb      = { path = "../chimera-adb" }
+chimera-fastboot = { path = "../chimera-fastboot" }
+chimera-edl      = { path = "../chimera-edl" }
+chimera-samsung  = { path = "../chimera-samsung" }
+chimera-xiaomi   = { path = "../chimera-xiaomi" }
+percent-encoding = "2.3"
+hex              = "0.4"
+chimera-oppo     = { path = "../chimera-oppo" }
+chimera-nokia    = { path = "../chimera-nokia" }
+chimera-huawei   = { path = "../chimera-huawei" }
+chimera-mtk      = { path = "../chimera-mtk" }
+chimera-unisoc   = { path = "../chimera-unisoc" }
+chimera-motorola = { path = "../chimera-motorola" }
+chimera-lg       = { path = "../chimera-lg" }
+chimera-htc      = { path = "../chimera-htc" }
+chimera-devices  = { path = "../chimera-devices" }
+chimera-firmware = { path = "../chimera-firmware" }
+chimera-utils    = { path = "../chimera-utils" }
+chimera-apple    = { path = "../chimera-apple" }
+chimera-api      = { path = "../chimera-api" }
+
+# GUI framework
+eframe      = { workspace = true }
+egui        = { workspace = true }
+egui_extras = { workspace = true }
+
+# Async runtime
+tokio              = { workspace = true }
+crossbeam-channel  = { workspace = true }
+
+# Utilities
+serde          = { workspace = true }
+serde_json     = { workspace = true }
+log            = { workspace = true }
+tracing        = { workspace = true }
+tracing-subscriber = { workspace = true }
+anyhow         = { workspace = true }
+thiserror      = { workspace = true }
+chrono         = { workspace = true }
+rfd            = "0.17"
+dirs           = "6.0"
+base64         = { workspace = true }
+
+# macOS: no winapi / no winres needed
+# eframe on macOS links against: AppKit, Foundation, Metal, QuartzCore (auto via eframe)
+
+[target.'cfg(target_os = "macos")'.dependencies]
+# Any macOS-only Rust crates would go here.
+# eframe handles Metal/AppKit linking automatically.

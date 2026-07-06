@@ -1,0 +1,21 @@
+[package]
+name        = "chimera-purple"
+version     = "1.0.0"
+edition     = "2021"
+description = "Apple Purple-Restore + PurpleSNIFF clean-room reimplementation. Talks to iPhone/iPad/iPod via lockdownd / mobilegestalt / diagnostics_relay over libimobiledevice to enumerate factory test-station data, sensor calibration, NAND identity, and to boot devices into Diagnostics (Purple) mode."
+
+[dependencies]
+chimera-core     = { path = "../chimera-core" }
+chimera-apple    = { path = "../chimera-apple" }
+chimera-imobile  = { path = "../chimera-imobile" }
+chimera-utils    = { path = "../chimera-utils" }
+
+serde            = { workspace = true, features = ["derive"] }
+serde_json       = { workspace = true }
+thiserror        = { workspace = true }
+anyhow           = { workspace = true }
+tracing          = { workspace = true }
+plist            = "1.9"
+hex              = { workspace = true }
+chrono           = { workspace = true }
+rusb             = { workspace = true }

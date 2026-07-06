@@ -1,0 +1,159 @@
+# ChimeraRS workspace — MacOS 10.14+ (Intel x86_64 / Apple Silicon arm64) build config
+# Target: x86_64-apple-darwin & aarch64-apple-darwin
+# Toolchain: nightly (for best LTO + strip support on macOS)
+# Build: cargo +nightly build --release --target x86_64-apple-darwin
+
+[workspace]
+members = [
+    "crates/chimera-core",
+    "crates/chimera-adb",
+    "crates/chimera-fastboot",
+    "crates/chimera-edl",
+    "crates/chimera-samsung",
+    "crates/chimera-xiaomi",
+    "crates/chimera-huawei",
+    "crates/chimera-mtk",
+    "crates/chimera-unisoc",
+    "crates/chimera-motorola",
+    "crates/chimera-lg",
+    "crates/chimera-htc",
+    "crates/chimera-sony",
+    "crates/chimera-nokia",
+    "crates/chimera-oppo",
+    "crates/chimera-nothing",
+    "crates/chimera-apple",
+    "crates/chimera-api",
+    "crates/chimera-devices",
+    "crates/chimera-firmware",
+    "crates/chimera-utils",
+    "crates/chimera-gui",
+    "crates/chimera-ffi",
+    "crates/chimera-imobile",
+    "crates/chimera-purple",
+    "crates/chimera-zebra",
+    "crates/chimera-pttpro",
+]
+resolver = "2"
+
+[workspace.dependencies]
+# Async runtime
+tokio = { version = "1.52", features = ["full"] }
+fake = "5.1.0"
+tower = "0.5.3"
+tower-http = "0.6.11"
+url = { version = "2.5.8", features = ["serde"] }
+
+# USB communication — libusb via rusb (Homebrew: brew install libusb)
+rusb = "0.9"
+
+# Serial port — macOS: uses /dev/cu.* devices via IOKit
+serialport = "4.9"
+
+# Serde
+serde      = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# HTTP client — FIXED: Updated feature flag syntax from 'rustls-tls' to 'rustls' for v0.13 compatibility
+reqwest = { version = "0.13", default-features = false, features = ["blocking", "rustls", "json", "stream", "multipart", "form", "query"] }
+
+# Crypto
+aes       = "0.9"
+sha2      = "0.10"
+sha1      = "0.10"
+md-5      = "0.10"
+hmac      = "0.12"
+hex       = "0.4"
+crc32fast = "1.5"
+crc       = "3.4"
+base64    = "0.22"
+
+# Logging
+log                = "0.4"
+env_logger         = "0.11"
+tracing            = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Error handling
+thiserror = "2.0"
+anyhow    = "1.0"
+
+# GUI — eframe uses Metal + AppKit on macOS (no OpenGL needed)
+eframe      = { version = "0.34", features = ["default_fonts", "persistence"] }
+egui        = "0.34"
+egui_extras = { version = "0.34", features = ["all_loaders"] }
+
+# Data structures
+indexmap  = "2.14"
+dashmap   = "6.2"
+bitflags  = "2.11"
+bytes     = "1.11"
+byteorder = "1.5"
+
+# File I/O
+zip     = "8.6"
+flate2  = "1.1"
+lzma-rs = "0.3"
+tar     = "0.4"
+
+# Async utilities
+futures           = "0.3"
+async-channel     = "2.5"
+crossbeam-channel = "0.5"
+
+# Threading
+rayon = "1.12"
+
+# Time — chrono uses POSIX clock_gettime on macOS
+chrono = { version = "0.4", features = ["serde"] }
+
+# Config
+toml   = "1.1"
+config = "0.15"
+
+# Platform
+uuid        = { version = "1.23", features = ["v4"] }
+rand        = "0.10"
+num-traits  = "0.2"
+
+# File dialog — rfd uses AppKit on macOS (NSOpenPanel)
+rfd = "0.17"
+
+# Dirs — macOS paths: ~/Library/Application Support, ~/Library/Caches, ~/Downloads
+dirs = "6.0"
+urlencoding = "2.1"
+
+# ── Vendored patches for nightly compatibility ─────────────────────────────
+[patch.crates-io]
+# arrayref 0.3.9 uses macro patterns that trigger ambiguity errors on nightly 2024+
+# This local patch rewrites the macros to comply with new hygiene rules.
+arrayref = { path = "vendor/arrayref" }
+
+
+# ── macOS release profile ──────────────────────────────────────────────────
+[profile.release]
+opt-level     = 3
+lto           = "fat"          # Full LTO — requires nightly on x86_64-apple-darwin
+codegen-units = 1
+panic         = "abort"        # Smaller binary, faster startup
+debug         = false          # Strip debugging configurations entirely
+strip         = "symbols"      # Optimization: Native Cargo stripping on macOS to shrink dylib and static sizes
+
+# ── macOS dev profile ─────────────────────────────────────────────────────
+[profile.dev]
+opt-level     = 0              # Optimization: Swapped from 1 to 0 for lightning-fast compilation times during Swift iteration
+debug         = true
+split-debuginfo = "unpacked"   # Optimization: Prevents slow .dSYM generation loops on local macOS builds
+
+# ── Performance Overrides for Heavy Dependencies ───────────────────────────
+# Keep our core logic clean for debugging, but compile heavy math/GUI engines with speed optimizations
+[profile.dev.package.egui]
+opt-level = 2
+[profile.dev.package.eframe]
+opt-level = 2
+[profile.dev.package.aes]
+opt-level = 3
+[profile.dev.package.sha2]
+opt-level = 3
+
+[workspace.lints.rust]
+future_incompatible = "allow"

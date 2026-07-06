@@ -1,0 +1,21 @@
+[package]
+name        = "chimera-zebra"
+version     = "1.0.0"
+edition     = "2021"
+description = "Zebra Technologies enterprise-handheld support (TC52, TC52x, TC52ax, TC53, TC53e, TC53-RFID) — enumeration, RxLogger, StageNow, DataWedge, EDL/Firehose orchestration, partition I/O, EMM detection, OTA sideload"
+
+[dependencies]
+chimera-core    = { path = "../chimera-core" }
+chimera-adb     = { path = "../chimera-adb" }
+chimera-fastboot= { path = "../chimera-fastboot" }
+chimera-edl     = { path = "../chimera-edl" }
+chimera-utils   = { path = "../chimera-utils" }
+
+serde       = { workspace = true, features = ["derive"] }
+serde_json  = { workspace = true }
+thiserror   = { workspace = true }
+anyhow      = { workspace = true }
+tracing     = { workspace = true }
+hex         = { workspace = true }
+sha2        = { workspace = true }
+chrono      = { workspace = true }
