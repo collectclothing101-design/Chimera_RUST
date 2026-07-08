@@ -1,0 +1,13 @@
+# rust-toolchain.toml
+# Pins the Rust toolchain to nightly for universal macOS builds
+# (macOS 10.14+ Mojave / Intel x86_64 + Apple Silicon arm64)
+#
+# Install:  rustup toolchain install nightly
+# Verify:   rustup show
+# Build:    ./deploy/build_rust.sh release 1
+
+[toolchain]
+channel    = "nightly"
+targets    = ["x86_64-apple-darwin", "aarch64-apple-darwin"]
+components = ["rustfmt", "clippy", "rust-src"]
+profile    = "minimal"

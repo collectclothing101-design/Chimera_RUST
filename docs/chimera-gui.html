@@ -1,0 +1,2294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ChimeraRS · v1.3.13</title>
+<style>
+/* ═══════════════════════════════════════════
+   RESET
+═══════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+select,input,textarea{font-family:inherit;outline:none}
+
+/* ═══════════════════════════════════════════
+   TOKENS
+═══════════════════════════════════════════ */
+:root{
+  --s00:#040506;
+  --s01:#080A0C;
+  --s02:#0C0F12;
+  --s03:#111418;
+  --s04:#161A1F;
+  --s05:#1B2028;
+  --s06:#212830;
+  --s07:#29313B;
+
+  --A:#E8951E;
+  --Ah:#F5A623;
+  --Al:#B87318;
+  --A03:rgba(232,149,30,.03);
+  --A06:rgba(232,149,30,.06);
+  --A10:rgba(232,149,30,.10);
+  --A18:rgba(232,149,30,.18);
+  --A30:rgba(232,149,30,.30);
+  --A48:rgba(232,149,30,.48);
+
+  --t0:#E2E6EC;
+  --t1:#A4AEBA;
+  --t2:#596472;
+  --t3:#323A46;
+
+  --G:#1AB86A;  --Gbg:rgba(26,184,106,.06);  --Gbr:rgba(26,184,106,.16);
+  --R:#C24444;  --Rbg:rgba(194,68,68,.06);   --Rbr:rgba(194,68,68,.16);
+  --B:#2F7DC0;  --Bbg:rgba(47,125,192,.06);  --Bbr:rgba(47,125,192,.16);
+
+  --ln:rgba(255,255,255,.046);
+  --lnh:rgba(255,255,255,.082);
+  --lna:rgba(232,149,30,.10);
+
+  --hh:43px;
+  --sw:188px;
+  --ch:90px;
+  --r:3px;
+
+  --f:"Helvetica Neue","HelveticaNeue",Helvetica,Arial,sans-serif;
+  --fm:"SF Mono","Fira Code","Cascadia Code",monospace;
+}
+
+/* ═══════════════════════════════════════════
+   DOCUMENT
+═══════════════════════════════════════════ */
+html,body{height:100%;overflow:hidden}
+body{
+  background:var(--s00);color:var(--t0);
+  font-family:var(--f);font-size:12px;line-height:1.55;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+  text-rendering:optimizeLegibility;
+  font-feature-settings:"kern"1,"liga"1,"calt"1;
+}
+/* matte grain */
+body::after{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:9997;opacity:.03;
+  background:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='512' height='512' filter='url(%23n)'/%3E%3C/svg%3E") 0 0/170px 170px;
+}
+/* dot grid */
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:radial-gradient(circle,rgba(255,255,255,.016) 1px,transparent 1px);
+  background-size:24px 24px;
+}
+#root{position:relative;z-index:1;display:flex;flex-direction:column;height:100%}
+
+/* ═══════════════════════════════════════════
+   ┌─────────────────────────────────────────┐
+   │  SHIMMER SYSTEM — SolarWinds-style      │
+   │  • CSS-class driven, zero JS per frame  │
+   │  • animation-play-state: paused default │
+   │  • JS picks pattern+duration on hover   │
+   │  • 8 directional keyframe variants      │
+   │  • fast-to-slow cubic-bezier easing     │
+   └─────────────────────────────────────────┘
+═══════════════════════════════════════════ */
+
+/* All shimmer-eligible elements */
+.sh{position:relative;overflow:hidden}
+
+/* The shimmer beam — sits on ::before of the element */
+.sh::before{
+  content:'';
+  position:absolute;
+  top:-20%;width:38%;height:140%;
+  background:linear-gradient(
+    105deg,
+    transparent 0%,
+    rgba(255,255,255,.014) 28%,
+    rgba(255,255,255,.048) 50%,
+    rgba(255,255,255,.014) 72%,
+    transparent 100%
+  );
+  transform:translateX(-220%) skewX(-14deg);
+  will-change:transform;
+  pointer-events:none;
+  z-index:8;
+  /* Default: paused — only plays when animation-play-state set to running */
+  animation-play-state:paused;
+  animation-timing-function:cubic-bezier(.72,0,.18,1); /* fast-to-slow */
+  animation-fill-mode:forwards;
+}
+
+/* Amber-tinted variant for accent elements */
+.sh.sh-a::before{
+  background:linear-gradient(
+    105deg,
+    transparent 0%,
+    rgba(232,149,30,.025) 28%,
+    rgba(232,149,30,.07) 50%,
+    rgba(232,149,30,.025) 72%,
+    transparent 100%
+  );
+}
+
+/* When JS sets animation-name via --sh-n, the :hover triggers play */
+.sh:hover::before{
+  animation-name:var(--sh-n,sh-lr);
+  animation-duration:var(--sh-d,560ms);
+  animation-play-state:running;
+}
+
+/* ── 8 DIRECTIONAL KEYFRAME PATTERNS ─────────────── */
+
+/* 1. Simple L→R */
+@keyframes sh-lr{
+  0%  {transform:translateX(-220%) skewX(-14deg)}
+  100%{transform:translateX(230%)  skewX(-14deg)}
+}
+
+/* 2. Simple R→L */
+@keyframes sh-rl{
+  0%  {transform:translateX(220%) skewX(14deg)}
+  100%{transform:translateX(-230%) skewX(14deg)}
+}
+
+/* 3. L→R stutter (fast bounce right, then left, then right) */
+@keyframes sh-lrl{
+  0%  {transform:translateX(-220%) skewX(-14deg)}
+  38% {transform:translateX(80%)   skewX(-10deg)}
+  42% {transform:translateX(50%)   skewX(8deg)}
+  80% {transform:translateX(-180%) skewX(12deg)}
+  100%{transform:translateX(230%)  skewX(-14deg)}
+}
+
+/* 4. R→L stutter */
+@keyframes sh-rll{
+  0%  {transform:translateX(220%)  skewX(14deg)}
+  38% {transform:translateX(-80%)  skewX(10deg)}
+  42% {transform:translateX(-50%)  skewX(-8deg)}
+  80% {transform:translateX(180%)  skewX(-12deg)}
+  100%{transform:translateX(-230%) skewX(14deg)}
+}
+
+/* 5. THE MAIN PATTERN — L,R,L,L,R,L,R,R (fast-to-slow at each reversal) */
+@keyframes sh-main{
+  0%    {transform:translateX(-220%) skewX(-14deg)}  /* → L sweep start */
+  14%   {transform:translateX(80%)   skewX(-10deg)}  /* → reach mid */
+  14.5% {transform:translateX(80%)   skewX(12deg)}   /* R reversal */
+  28%   {transform:translateX(-180%) skewX(12deg)}   /* → L */
+  28.5% {transform:translateX(-180%) skewX(-11deg)}  /* L again */
+  42%   {transform:translateX(60%)   skewX(-11deg)}  /* → R */
+  42.5% {transform:translateX(60%)   skewX(10deg)}
+  56%   {transform:translateX(-160%) skewX(10deg)}   /* L */
+  56.5% {transform:translateX(-160%) skewX(-12deg)}
+  70%   {transform:translateX(90%)   skewX(-12deg)}  /* R */
+  70.5% {transform:translateX(90%)   skewX(13deg)}
+  84%   {transform:translateX(-200%) skewX(13deg)}   /* R→R sweep */
+  100%  {transform:translateX(230%)  skewX(13deg)}   /* R exit */
+}
+
+/* 6. Fast double-L then single R */
+@keyframes sh-llr{
+  0%   {transform:translateX(-220%) skewX(-14deg)}
+  18%  {transform:translateX(220%)  skewX(-14deg)}
+  18.5%{transform:translateX(-220%) skewX(-14deg)}
+  42%  {transform:translateX(220%)  skewX(-14deg)}
+  42.5%{transform:translateX(-220%) skewX(14deg)}
+  100% {transform:translateX(220%)  skewX(14deg)}
+}
+
+/* 7. R, then double-L, then R */
+@keyframes sh-rllr{
+  0%   {transform:translateX(220%)  skewX(14deg)}
+  22%  {transform:translateX(-220%) skewX(14deg)}
+  22.5%{transform:translateX(-220%) skewX(-14deg)}
+  44%  {transform:translateX(220%)  skewX(-14deg)}
+  44.5%{transform:translateX(220%)  skewX(14deg)}
+  66%  {transform:translateX(-220%) skewX(14deg)}
+  66.5%{transform:translateX(-220%) skewX(-14deg)}
+  100% {transform:translateX(220%)  skewX(-14deg)}
+}
+
+/* 8. Slow drift L→R (for large surfaces) */
+@keyframes sh-drift{
+  0%  {transform:translateX(-220%) skewX(-8deg)}
+  100%{transform:translateX(230%)  skewX(-8deg)}
+}
+
+/* ─── Speed helpers ─────────────────────────── */
+/* Applied by JS via --sh-d var, these don't need separate classes */
+
+/* ═══════════════════════════════════════════
+   SCROLLBARS
+═══════════════════════════════════════════ */
+*{scrollbar-width:thin;scrollbar-color:var(--s06) transparent}
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-thumb{background:var(--s06);border-radius:2px}
+
+/* ═══════════════════════════════════════════
+   HEADER
+═══════════════════════════════════════════ */
+#hdr{
+  height:var(--hh);background:var(--s01);
+  border-bottom:1px solid var(--ln);
+  display:flex;align-items:center;padding:0 12px;gap:8px;
+  flex-shrink:0;position:relative;z-index:10;
+}
+#hdr::after{
+  content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--A30) 25%,var(--A30) 75%,transparent);
+}
+#hdr.scanning::before{
+  content:'';position:absolute;inset:0;z-index:20;pointer-events:none;
+  background:linear-gradient(90deg,transparent,var(--A10) 50%,transparent);
+  animation:hs 1.4s linear infinite;
+}
+@keyframes hs{from{transform:translateX(-100%)}to{transform:translateX(200%)}}
+
+.brand{display:flex;align-items:center;user-select:none}
+.b-bolt{color:var(--A);font-size:10px;margin-right:5px;animation:ba 5s ease-in-out infinite}
+@keyframes ba{0%,100%{filter:drop-shadow(0 0 2px var(--A30))}60%{filter:drop-shadow(0 0 7px var(--A48))}}
+.b-name{
+  font-size:12.5px;font-weight:800;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--A);
+  font-feature-settings:"kern"0;
+}
+.b-tag{
+  font-size:8px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--t2);margin-left:6px;
+  background:var(--s03);border:1px solid var(--ln);padding:1px 5px;border-radius:2px;
+}
+.b-ver{font-size:8.5px;color:var(--t3);font-family:var(--fm);margin-left:4px;letter-spacing:.04em}
+
+.hdiv{width:1px;height:14px;background:var(--ln);flex-shrink:0}
+
+.pill{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:1.5px 7px;border-radius:2px;
+  font-size:8.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  border:1px solid;line-height:1.7;
+}
+.p-live{background:var(--Gbg);color:var(--G);border-color:var(--Gbr)}
+.p-warn{background:var(--A03);color:var(--A);border-color:var(--A18)}
+.p-mute{background:transparent;color:var(--t2);border-color:var(--ln)}
+.p-scan{background:var(--A06);color:var(--Ah);border-color:var(--A30);animation:sp .7s ease-in-out infinite}
+@keyframes sp{0%,100%{opacity:1}50%{opacity:.5}}
+
+.dot{width:4px;height:4px;border-radius:50%;background:currentColor;animation:dp 3s ease-in-out infinite}
+@keyframes dp{0%,100%{opacity:.85;transform:scale(1)}50%{opacity:.2;transform:scale(.5)}}
+
+.cring{position:relative;display:inline-flex;align-items:center;justify-content:center}
+.cring::after{
+  content:'';position:absolute;width:10px;height:10px;border-radius:50%;
+  border:1px solid var(--G);opacity:0;animation:cr 3s ease-out infinite;
+}
+@keyframes cr{0%{transform:scale(.4);opacity:.6}100%{transform:scale(2.4);opacity:0}}
+
+.h-user{line-height:1.2}
+.h-un{font-size:10.5px;font-weight:600;color:var(--t0);display:block;letter-spacing:.02em}
+.h-uh{font-size:8px;color:var(--t2);display:block;font-family:var(--fm);letter-spacing:.03em}
+
+#hclock{font-size:9px;font-family:var(--fm);color:var(--t2);letter-spacing:.07em;min-width:56px;text-align:right;font-variant-numeric:tabular-nums}
+.hgap{flex:1}
+
+/* header buttons — shimmer-eligible */
+.hbtn{
+  padding:3px 10px;border-radius:var(--r);
+  font-size:10px;font-weight:500;letter-spacing:.02em;
+  color:var(--t1);background:transparent;border:1px solid var(--ln);
+  transition:border-color .1s,color .1s,background .1s,transform .06s;
+}
+.hbtn:hover{border-color:var(--A30);color:var(--A);background:var(--A03)}
+.hbtn:active{transform:scale(.96)}
+
+.hbtn-p{
+  padding:3px 11px;border-radius:var(--r);
+  font-size:10px;font-weight:700;letter-spacing:.03em;
+  color:#040200;background:var(--A);border:1px solid var(--Ah);
+  transition:background .1s,box-shadow .1s,transform .07s cubic-bezier(.34,1.56,.64,1);
+  display:flex;align-items:center;gap:4px;
+}
+.hbtn-p:hover{background:var(--Ah);box-shadow:0 0 14px var(--A18)}
+.hbtn-p:active{transform:scale(.96)}
+.spin{display:inline-block;transition:transform .5s cubic-bezier(.34,1.56,.64,1)}
+.hbtn-p:hover .spin{transform:rotate(180deg)}
+
+/* ═══════════════════════════════════════════
+   LAYOUT
+═══════════════════════════════════════════ */
+#layout{display:flex;flex:1;overflow:hidden}
+
+/* ═══════════════════════════════════════════
+   SIDEBAR
+═══════════════════════════════════════════ */
+#sb{
+  width:var(--sw);background:var(--s01);
+  border-right:1px solid var(--ln);
+  display:flex;flex-direction:column;
+  flex-shrink:0;overflow-y:auto;overflow-x:hidden;
+}
+.sb-id{
+  padding:11px;border-bottom:1px solid var(--ln);
+  position:relative;overflow:hidden;
+}
+.sb-id::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:2px;
+  background:linear-gradient(180deg,var(--A),var(--Al) 70%,transparent);
+}
+.sb-id::after{
+  content:'';position:absolute;bottom:-20px;left:-20px;
+  width:70px;height:70px;
+  background:radial-gradient(circle,var(--A06),transparent 70%);
+  pointer-events:none;
+}
+.sb-role{
+  font-size:7.5px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--A48);margin-bottom:3px;
+  display:flex;align-items:center;gap:5px;
+}
+.sb-role::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--A18),transparent)}
+.sb-name{font-size:11px;font-weight:700;color:var(--t0);letter-spacing:.02em}
+.sb-host{font-size:8.5px;color:var(--t2);font-family:var(--fm);letter-spacing:.03em;margin-top:2px}
+.sb-status{display:flex;gap:8px;margin-top:7px;padding-top:6px;border-top:1px solid var(--ln)}
+.sb-si{display:flex;align-items:center;gap:3px;font-size:8px;color:var(--t3)}
+.sb-si.ok{color:var(--G)}.sb-si.wa{color:var(--A)}.sb-si.er{color:var(--R)}
+.sb-sid{width:4px;height:4px;border-radius:50%;background:currentColor;flex-shrink:0}
+
+/* nav groups */
+.ng{padding:6px 0}
+.ng-hd{display:flex;align-items:center;gap:5px;padding:0 10px 3px}
+.ng-lbl{font-size:7px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:var(--t3);white-space:nowrap}
+.ng-hd::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--ln),transparent)}
+
+/* nav items — shimmer-eligible */
+.ni{
+  display:flex;align-items:center;gap:6px;
+  padding:5px 10px;cursor:pointer;
+  border-left:2px solid transparent;
+  color:var(--t2);font-size:11px;font-weight:400;
+  transition:color .08s,background .08s,border-color .1s;
+  user-select:none;letter-spacing:.015em;
+}
+.ni:hover{background:var(--A03);color:var(--t1)}
+.ni.on{border-left-color:var(--A);background:var(--A03);color:var(--A);font-weight:600}
+.ni-ico{width:13px;height:13px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;opacity:.55}
+.ni.on .ni-ico{opacity:1}
+
+.nbsep{height:1px;background:linear-gradient(90deg,var(--ln) 40%,transparent);margin:2px 0}
+
+/* sidebar footer */
+#sbf{
+  margin-top:auto;padding:8px 10px;border-top:1px solid var(--ln);
+  font-size:8px;color:var(--t3);font-family:var(--fm);display:flex;flex-direction:column;gap:2px;
+}
+.sf-row{display:flex;align-items:center;justify-content:space-between}
+.sf-k{font-size:7px;letter-spacing:.08em;text-transform:uppercase;color:var(--t3)}
+.sf-v{color:var(--t2);font-variant-numeric:tabular-nums}
+
+/* ═══════════════════════════════════════════
+   MAIN
+═══════════════════════════════════════════ */
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+#content{flex:1;overflow-y:auto;overflow-x:hidden;padding:17px 19px}
+
+/* ═══════════════════════════════════════════
+   CONSOLE
+═══════════════════════════════════════════ */
+#con{
+  height:var(--ch);background:var(--s01);
+  border-top:1px solid var(--ln);flex-shrink:0;display:flex;flex-direction:column;
+}
+.ch-hdr{
+  display:flex;align-items:center;gap:6px;
+  padding:4px 11px;border-bottom:1px solid var(--ln);flex-shrink:0;
+  position:relative;overflow:hidden;
+}
+.ch-hdr::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(90deg,transparent,var(--A03) 50%,transparent);
+  background-size:200% 100%;animation:ds 5s linear infinite;
+}
+@keyframes ds{from{background-position:200% 0}to{background-position:-200% 0}}
+.ch-t{font-size:8.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--A);position:relative;font-feature-settings:"kern"0}
+.ch-m{margin-left:auto;font-size:7.5px;color:var(--t3);font-family:var(--fm);letter-spacing:.04em;position:relative}
+.ch-body{flex:1;overflow-y:auto;padding:3px 11px;font-family:var(--fm);font-size:9px;scrollbar-width:none}
+.ch-body::-webkit-scrollbar{display:none}
+.ll{display:flex;gap:8px;padding:.25px 0;line-height:1.75}
+.lt{color:var(--t3);flex-shrink:0;font-size:8.5px;font-variant-numeric:tabular-nums}
+.lI{color:var(--G);font-weight:700;font-size:8px;flex-shrink:0}
+.lW{color:var(--A);font-weight:700;font-size:8px;flex-shrink:0}
+.lE{color:var(--R);font-weight:700;font-size:8px;flex-shrink:0}
+.lm{color:var(--t2);font-size:9px}
+.ll.new .lm{overflow:hidden;white-space:nowrap;animation:tw .33s steps(50,end)}
+@keyframes tw{from{width:0}to{width:100%}}
+
+/* ═══════════════════════════════════════════
+   PAGES
+═══════════════════════════════════════════ */
+.page{display:none}
+.page.active{display:block;animation:pi .11s ease}
+@keyframes pi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* ═══════════════════════════════════════════
+   PAGE HEADER
+═══════════════════════════════════════════ */
+.ph{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--ln);
+}
+.ph-idx{font-size:7.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--A48);font-family:var(--fm);margin-bottom:2px}
+.pt{font-size:15px;font-weight:800;color:var(--t0);letter-spacing:-.04em;line-height:1}
+.ps{font-size:10px;color:var(--t2);margin-top:2px;letter-spacing:.02em;display:flex;align-items:center;gap:4px}
+.ps-sep{color:var(--t3)}
+.pa{display:flex;align-items:center;gap:6px;padding-top:2px}
+
+/* ═══════════════════════════════════════════
+   SECTION HEADER
+═══════════════════════════════════════════ */
+.sh{display:flex;align-items:center;gap:5px;margin-bottom:8px}
+.sb2{width:2px;height:9px;background:var(--A);border-radius:1px;flex-shrink:0}
+.sl{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t1)}
+
+/* ═══════════════════════════════════════════
+   CARDS — shimmer-eligible
+═══════════════════════════════════════════ */
+.card{
+  background:var(--s02);border:1px solid var(--ln);
+  border-radius:var(--r);padding:12px;
+  transition:border-color .15s;
+}
+/* top-sheen via ::after (shimmer uses ::before) */
+.card::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--lnh) 40%,var(--lnh) 60%,transparent);
+  pointer-events:none;
+}
+/* left accent slide on hover */
+.card-ha{
+  background:var(--s02);border:1px solid var(--ln);
+  border-radius:var(--r);padding:12px;
+  transition:border-color .15s;
+}
+.card-ha::after{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--A),var(--Al));transform:scaleY(0);transform-origin:bottom;transition:transform .22s cubic-bezier(.34,1.56,.64,1);border-radius:0 1px 1px 0}
+.card-ha:hover{border-color:var(--lna)}
+.card-ha:hover::after{transform:scaleY(1)}
+
+.cflat{background:var(--s02);border:1px solid var(--ln);border-radius:var(--r);padding:12px}
+
+.ctit{
+  font-size:7.5px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--t3);margin-bottom:9px;
+  display:flex;align-items:center;gap:5px;
+}
+.ctit::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--ln),transparent)}
+
+/* ═══════════════════════════════════════════
+   GRIDS
+═══════════════════════════════════════════ */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+
+/* ═══════════════════════════════════════════
+   STAT CARDS — shimmer-eligible, sh-a variant
+═══════════════════════════════════════════ */
+.sc{
+  background:var(--s02);border:1px solid var(--ln);
+  border-radius:var(--r);padding:11px 12px;
+  transition:border-color .15s;
+}
+/* top sheen via ::after */
+.sc::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--lnh),transparent);pointer-events:none}
+/* corner bracket detail */
+.sc-br{position:absolute;bottom:6px;right:6px;width:8px;height:8px;border-bottom:1px solid var(--t3);border-right:1px solid var(--t3);border-radius:0 0 1px 0;opacity:.35}
+.sc:hover{border-color:var(--lna)}
+.sc-l{font-size:7.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--t3)}
+.sc-v{font-size:20px;font-weight:700;color:var(--t0);line-height:1.25;margin-top:2px;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.sc-v.am{color:var(--A)}
+.sc-m{font-size:8.5px;color:var(--t2);margin-top:1px;letter-spacing:.01em}
+
+/* ═══════════════════════════════════════════
+   MODE CARDS — shimmer-eligible, sh-a variant
+═══════════════════════════════════════════ */
+.mc{
+  background:var(--s02);border:1px solid var(--ln);
+  border-radius:var(--r);padding:12px 13px;cursor:pointer;
+  transition:border-color .15s,background .15s;
+}
+.mc::after{content:'';position:absolute;bottom:7px;right:7px;width:9px;height:9px;border-bottom:1.5px solid transparent;border-right:1.5px solid transparent;border-radius:0 0 2px 0;transition:border-color .2s;pointer-events:none}
+.mc.sel::after{border-color:var(--A30)}
+.mc:hover{border-color:var(--lna)}
+.mc.sel{border-color:var(--lna);background:var(--A03)}
+.mc-tag{position:absolute;top:8px;right:8px;background:var(--A);color:#030100;padding:1px 5px;border-radius:2px;font-size:7.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+.mc-t{font-size:11px;font-weight:700;color:var(--t0);letter-spacing:.04em;margin-bottom:2px}
+.mc-d{font-size:10px;color:var(--t2);line-height:1.7;letter-spacing:.01em}
+
+/* ═══════════════════════════════════════════
+   UNDERLINE TABS — shimmer-eligible
+═══════════════════════════════════════════ */
+.ts{
+  display:flex;border-bottom:1px solid var(--ln);
+  margin-bottom:13px;overflow-x:auto;scrollbar-width:none;
+}
+.ts::-webkit-scrollbar{display:none}
+.tab{
+  padding:6px 11px 5px;font-size:10px;font-weight:500;
+  color:var(--t2);letter-spacing:.02em;
+  position:relative;cursor:pointer;transition:color .1s;
+  white-space:nowrap;margin-bottom:-1px;
+}
+/* Center-expanding underline */
+.tab::after{
+  content:'';position:absolute;bottom:-1px;left:50%;right:50%;
+  height:2px;background:var(--A);
+  transition:left .18s ease,right .18s ease;border-radius:1px 1px 0 0;
+}
+.tab:hover{color:var(--t1)}
+.tab:hover::after{left:18%;right:18%}
+.tab.on{color:var(--A);font-weight:600}
+.tab.on::after{left:0;right:0}
+
+/* ═══════════════════════════════════════════
+   KV PAIRS
+═══════════════════════════════════════════ */
+.kv{display:grid;grid-template-columns:120px 1fr}
+.kk{font-size:10px;color:var(--t2);font-weight:500;padding:3.5px 0;border-bottom:1px solid var(--ln);letter-spacing:.02em}
+.vv{font-size:10.5px;color:var(--t0);padding:3.5px 0;border-bottom:1px solid var(--ln);letter-spacing:.01em}
+.vv.mo{font-family:var(--fm);font-size:9px;letter-spacing:.025em}
+.vv.G{color:var(--G)}.vv.A{color:var(--A)}.vv.R{color:var(--R)}
+.kv-e .kk,.kv-e .vv{border-bottom:none}
+
+/* ═══════════════════════════════════════════
+   BUTTONS — shimmer-eligible, spring physics
+═══════════════════════════════════════════ */
+.btn{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:4px 10px;border-radius:var(--r);
+  font-size:10px;font-weight:500;letter-spacing:.02em;
+  transition:all .1s,transform .07s cubic-bezier(.34,1.56,.64,1);
+  white-space:nowrap;
+}
+.btn:active{transform:scale(.94)!important}
+.bp{background:var(--A);color:#030100;font-weight:700;border:1px solid var(--Ah)}
+.bp:hover{background:var(--Ah);box-shadow:0 0 10px var(--A10)}
+.bs{background:var(--s04);color:var(--t1);border:1px solid var(--ln)}
+.bs:hover{border-color:var(--A30);color:var(--A);background:var(--A03)}
+.bd{background:var(--Rbg);color:var(--R);border:1px solid var(--Rbr)}
+.bd:hover{background:rgba(194,68,68,.10)}
+.bxs{padding:3px 7px;font-size:9.5px}
+
+/* ═══════════════════════════════════════════
+   NOTICES
+═══════════════════════════════════════════ */
+.note{padding:6px 9px;border-radius:var(--r);font-size:10px;line-height:1.7;border-left:2px solid;letter-spacing:.01em}
+.nw{background:var(--A03);border-color:var(--A);color:var(--A)}
+.ni2{background:var(--Bbg);border-color:var(--B);color:#60a0d8}
+.nk{background:var(--Gbg);border-color:var(--G);color:#40cc8c}
+.ne{background:var(--Rbg);border-color:var(--R);color:#c07070}
+
+/* ═══════════════════════════════════════════
+   FORMS
+═══════════════════════════════════════════ */
+.fl{display:block;font-size:7.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--t2);margin-bottom:3px}
+.fi,.fse,.ft{
+  width:100%;background:var(--s00);border:1px solid var(--ln);
+  border-radius:var(--r);color:var(--t0);
+  font-family:var(--f);font-size:10.5px;letter-spacing:.01em;
+  padding:4.5px 8px;
+  transition:border-color .12s,box-shadow .12s;
+  appearance:none;-webkit-appearance:none;
+}
+.fi:focus,.fse:focus,.ft:focus{border-color:var(--A30);box-shadow:0 0 0 2px var(--A03)}
+.fi::placeholder,.ft::placeholder{color:var(--t3);font-style:italic;font-size:10px}
+.fi.mo,.fse.mo{font-family:var(--fm);font-size:9px;letter-spacing:.03em}
+.fse{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23596472'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:calc(100% - 7px) 50%;background-size:6px;
+  padding-right:20px;cursor:pointer;
+}
+.fr{margin-bottom:8px}
+.tr{display:flex;align-items:center;justify-content:space-between;padding:5.5px 0;border-bottom:1px solid var(--ln)}
+.tr:last-child{border-bottom:none}
+.tl{font-size:10.5px;color:var(--t0);letter-spacing:.01em}
+.tsl{font-size:8px;color:var(--t2);margin-top:1px;letter-spacing:.01em}
+/* spring toggle */
+.tog{width:28px;height:15px;border-radius:7.5px;background:var(--s06);border:1px solid var(--lnh);position:relative;cursor:pointer;flex-shrink:0;transition:background .18s,border-color .18s}
+.tog.on{background:var(--A);border-color:var(--A)}
+.tog::after{content:'';width:9px;height:9px;border-radius:50%;background:var(--t2);position:absolute;top:2px;left:2px;transition:left .22s cubic-bezier(.34,1.56,.64,1),background .18s}
+.tog.on::after{left:15px;background:#030100}
+
+/* ═══════════════════════════════════════════
+   TABLE
+═══════════════════════════════════════════ */
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{text-align:left;padding:4px 8px;font-size:7.5px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--t3);border-bottom:1px solid var(--ln)}
+.tbl td{padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.02);font-size:10px;color:var(--t1);letter-spacing:.01em;transition:background .06s}
+.tbl tr:hover td{background:var(--A03)}
+.tbl tr:last-child td{border-bottom:none}
+.tbl .mo{font-family:var(--fm);font-size:9px;color:var(--t2);letter-spacing:.025em}
+
+/* ═══════════════════════════════════════════
+   CHIPS
+═══════════════════════════════════════════ */
+.chip{display:inline-flex;align-items:center;padding:1px 5px;border-radius:2px;font-size:8.5px;font-weight:700;letter-spacing:.07em;border:1px solid;text-transform:uppercase}
+.cG{background:var(--Gbg);color:var(--G);border-color:var(--Gbr)}
+.cA{background:var(--A03);color:var(--A);border-color:var(--A18)}
+.cR{background:var(--Rbg);color:var(--R);border-color:var(--Rbr)}
+.cB{background:var(--Bbg);color:var(--B);border-color:var(--Bbr)}
+.cM{background:transparent;color:var(--t2);border-color:var(--ln)}
+
+/* ═══════════════════════════════════════════
+   CARRIER ROWS — shimmer-eligible
+═══════════════════════════════════════════ */
+.crow{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 11px;background:var(--s02);
+  border:1px solid var(--ln);border-radius:var(--r);
+  transition:border-color .12s,background .1s;
+}
+.crow:hover{border-color:var(--lna);background:var(--A03)}
+.crow+.crow{margin-top:5px}
+.crn{font-size:11px;font-weight:600;color:var(--t0);letter-spacing:.02em}
+.crm{font-size:9px;color:var(--t2);font-family:var(--fm);margin-top:2px;letter-spacing:.03em}
+
+/* ═══════════════════════════════════════════
+   EMPTY STATES
+═══════════════════════════════════════════ */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:44px 20px;gap:9px}
+.e-ico{position:relative;width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--t2)}
+.e-ico::before,.e-ico::after{content:'';position:absolute;border-radius:50%;border:1px solid var(--ln)}
+.e-ico::before{inset:0;animation:rp 3.4s ease-in-out infinite}
+.e-ico::after{inset:-9px;animation:rp 3.4s ease-in-out infinite .7s}
+@keyframes rp{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:.1;transform:scale(1.1)}}
+.e-t{font-size:11.5px;font-weight:600;color:var(--t2);letter-spacing:.02em}
+.e-s{font-size:9.5px;text-align:center;max-width:270px;line-height:1.8;color:var(--t3);letter-spacing:.01em}
+
+/* ═══════════════════════════════════════════
+   QUICK-ACCESS CARDS — shimmer-eligible
+═══════════════════════════════════════════ */
+.qa{
+  background:var(--s02);border:1px solid var(--ln);border-radius:var(--r);
+  padding:11px 12px;cursor:pointer;
+  transition:border-color .12s,background .1s;
+}
+.qa:hover{border-color:var(--lna);background:var(--A03)}
+.qa:active{transform:scale(.99)}
+.qa-ico{font-size:14px;opacity:.28;margin-bottom:5px}
+.qa-t{font-size:11px;font-weight:700;color:var(--t0);margin-bottom:1px;letter-spacing:.01em}
+.qa-s{font-size:9px;color:var(--t2);letter-spacing:.02em}
+
+/* ═══════════════════════════════════════════
+   MODAL
+═══════════════════════════════════════════ */
+.ov{position:fixed;inset:0;background:rgba(4,5,6,.83);backdrop-filter:blur(5px);z-index:9000;display:none;align-items:center;justify-content:center}
+.ov.open{display:flex}
+.ov.open .mdl{animation:mdi .19s cubic-bezier(.34,1.56,.64,1)}
+@keyframes mdi{from{opacity:0;transform:scale(.93) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.mdl{
+  background:var(--s02);border:1px solid var(--lnh);border-radius:4px;
+  padding:20px;width:430px;max-height:80vh;overflow-y:auto;
+  box-shadow:0 24px 60px rgba(0,0,0,.82),0 0 0 1px rgba(255,255,255,.04);
+  position:relative;overflow:hidden;
+}
+.mdl::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--A18) 40%,var(--A18) 60%,transparent)}
+.mh{font-size:13px;font-weight:800;color:var(--t0);margin-bottom:12px;letter-spacing:-.03em;display:flex;align-items:center;justify-content:space-between}
+.mx{cursor:pointer;color:var(--t2);font-size:17px;line-height:1;transition:color .1s,transform .15s}
+.mx:hover{color:var(--t0);transform:rotate(90deg)}
+
+/* ═══════════════════════════════════════════
+   SCAN OVERLAY
+═══════════════════════════════════════════ */
+#scan-ov{position:fixed;inset:0;z-index:8000;display:none;align-items:center;justify-content:center;background:rgba(4,5,6,.65);backdrop-filter:blur(3px)}
+#scan-ov.open{display:flex}
+.scan-wrap{display:flex;flex-direction:column;align-items:center;gap:11px}
+.scan-box{position:relative;width:68px;height:68px;display:flex;align-items:center;justify-content:center}
+.scan-ring{width:68px;height:68px;border-radius:50%;border:1.5px solid var(--ln);border-top-color:var(--A);border-right-color:var(--A48);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.scan-inner{position:absolute;width:48px;height:48px;border-radius:50%;border:1px dashed var(--A18);animation:spin 2.8s linear infinite reverse}
+.scan-lbl{font-size:10px;font-weight:700;color:var(--t1);letter-spacing:.14em;text-transform:uppercase}
+.scan-sub{font-size:8.5px;color:var(--t2);font-family:var(--fm);letter-spacing:.04em;max-width:200px;text-align:center}
+
+/* ═══════════════════════════════════════════
+   CODE BLOCK
+═══════════════════════════════════════════ */
+.code{
+  background:var(--s00);border:1px solid var(--ln);border-radius:var(--r);
+  padding:7px 10px;font-family:var(--fm);font-size:9.5px;color:var(--t2);
+  overflow-x:auto;letter-spacing:.025em;line-height:1.8;position:relative;
+}
+.code::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--A18),transparent)}
+
+/* ═══════════════════════════════════════════
+   UTILITIES
+═══════════════════════════════════════════ */
+.fx{display:flex}.fc{flex-direction:column}
+.ac{align-items:center}.jb{justify-content:space-between}
+.g6{gap:6px}.g8{gap:8px}
+.f1{flex:1}.w100{width:100%}
+.mb4{margin-bottom:4px}.mb6{margin-bottom:6px}.mb8{margin-bottom:8px}
+.mb10{margin-bottom:10px}.mb12{margin-bottom:12px}.mb16{margin-bottom:16px}
+.mt6{margin-top:6px}.mt8{margin-top:8px}
+.tA{color:var(--A)}.tG{color:var(--G)}.tR{color:var(--R)}
+.tM{color:var(--t2)}.tD{color:var(--t3)}
+.xs{font-size:9px;letter-spacing:.01em}.sm{font-size:10.5px}
+.mo{font-family:var(--fm)}.w6{font-weight:600}.w7{font-weight:700}
+.hidden{display:none!important}
+
+
+/* ═══════════════════════════════════════════
+   ADMIN POLISH OVERRIDE · 2026-04-01
+═══════════════════════════════════════════ */
+:root{
+  --sw:236px;
+  --r:8px;
+  --ghost0:rgba(255,255,255,0);
+  --ghost1:rgba(255,255,255,.018);
+  --ghost2:rgba(255,255,255,.032);
+  --ghost3:rgba(244,246,248,.082);
+  --ghost4:rgba(220,226,233,.14);
+  --ghostln:rgba(255,255,255,.10);
+}
+
+#hdr{
+  padding:0 14px;
+  gap:10px;
+  background:linear-gradient(180deg,rgba(15,18,22,.98),rgba(8,10,12,.98));
+  box-shadow:0 10px 24px rgba(0,0,0,.24);
+}
+#hdr::after{background:linear-gradient(90deg,transparent,rgba(255,255,255,.09),transparent)}
+#hdr.scanning::before{
+  background:linear-gradient(90deg,transparent,rgba(245,247,250,.05) 50%,transparent);
+  animation:hs 2.8s linear infinite;
+}
+
+.h-user{min-width:168px}
+.h-un{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.h-uh{font-size:8px;color:var(--t1)}
+.p-warn{background:rgba(255,255,255,.04);color:#eef2f5;border-color:rgba(255,255,255,.12)}
+.p-mute,.pill{border-radius:999px}
+
+.sh::before{
+  top:-16%;width:44%;height:132%;
+  background:linear-gradient(108deg,
+    transparent 0%,
+    rgba(255,255,255,.012) 22%,
+    rgba(255,255,255,.038) 42%,
+    rgba(243,246,249,.10) 50%,
+    rgba(215,221,228,.12) 56%,
+    rgba(255,255,255,.038) 68%,
+    rgba(255,255,255,.012) 82%,
+    transparent 100%);
+  transform:translateX(-210%) skewX(-10deg);
+  animation-timing-function:cubic-bezier(.36,0,.18,1);
+  opacity:.82;
+}
+.sh.sh-a::before{
+  background:linear-gradient(108deg,
+    transparent 0%,
+    rgba(255,255,255,.014) 22%,
+    rgba(246,248,250,.044) 42%,
+    rgba(239,243,247,.11) 50%,
+    rgba(214,220,228,.13) 56%,
+    rgba(255,255,255,.044) 68%,
+    rgba(255,255,255,.014) 82%,
+    transparent 100%);
+}
+.sh:hover::before{animation-duration:var(--sh-d,1320ms)}
+
+#sb{
+  background:linear-gradient(180deg,rgba(11,13,16,.98),rgba(7,8,10,.98));
+  box-shadow:inset -1px 0 0 rgba(255,255,255,.03);
+}
+.sb-id{
+  padding:14px 14px 12px;
+  background:linear-gradient(180deg,rgba(255,255,255,.018),transparent 72%);
+}
+.sb-id::before{
+  width:1px;
+  background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(220,226,233,.12) 76%,transparent);
+}
+.sb-id::after{
+  width:110px;height:110px;left:auto;right:-20px;bottom:-32px;
+  background:radial-gradient(circle,rgba(255,255,255,.05),transparent 72%);
+}
+.sb-role{color:rgba(255,255,255,.52);margin-bottom:5px}
+.sb-role::after{background:linear-gradient(90deg,rgba(255,255,255,.10),transparent)}
+.sb-name{font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+.sb-host{margin-top:4px;font-size:8.35px;line-height:1.7;color:var(--t1);white-space:normal}
+.sb-status{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:6px;
+  margin-top:9px;
+  padding-top:8px;
+}
+.sb-si{
+  justify-content:center;
+  padding:5px 6px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.024);
+  font-size:7.8px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.sb-si.ok{border-color:rgba(26,184,106,.18)}
+.sb-si.wa{border-color:rgba(232,149,30,.18)}
+
+.ng{padding:8px 0}
+.ng-hd{padding:0 13px 5px}
+.ng-lbl{color:rgba(255,255,255,.36)}
+.nbsep{margin:4px 10px;background:linear-gradient(90deg,rgba(255,255,255,.08),transparent)}
+.ni{
+  margin:2px 8px;
+  padding:7px 10px;
+  border:1px solid transparent;
+  border-left:none;
+  border-radius:8px;
+  color:#b1bac5;
+  font-weight:500;
+}
+.ni-ico{opacity:.66}
+.ni:hover{
+  background:linear-gradient(180deg,rgba(255,255,255,.032),rgba(255,255,255,.018));
+  border-color:rgba(255,255,255,.09);
+  color:#eef2f5;
+}
+.ni.on{
+  background:linear-gradient(180deg,rgba(255,255,255,.048),rgba(255,255,255,.022));
+  border-color:rgba(255,255,255,.13);
+  color:#f4f7fa;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 10px 20px rgba(0,0,0,.18);
+}
+.ni.on .ni-ico{opacity:1}
+
+#content{padding:18px 20px}
+.ph{margin-bottom:16px;padding-bottom:13px}
+.card,.card-ha,.cflat,.sc,.mc,.empty,.qa,.crow{
+  border-radius:10px;
+  border-color:rgba(255,255,255,.06);
+  background:linear-gradient(180deg,rgba(22,26,31,.96),rgba(12,15,18,.98));
+  box-shadow:0 14px 34px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.025);
+}
+.card-ha:hover,.card:hover,.sc:hover,.mc:hover,.qa:hover,.crow:hover{
+  border-color:rgba(255,255,255,.12);
+}
+.card-ha::after{width:1px;background:linear-gradient(180deg,rgba(244,246,248,.88),rgba(214,220,228,.14));opacity:.72}
+.ctit{color:rgba(255,255,255,.42)}
+.ctit::after{background:linear-gradient(90deg,rgba(255,255,255,.08),transparent)}
+
+.ts{gap:4px;border-bottom-color:rgba(255,255,255,.08)}
+.tab{
+  padding:8px 12px 7px;
+  border-radius:8px 8px 0 0;
+  color:#aab3be;
+}
+.tab:hover{color:#eef2f5;background:rgba(255,255,255,.02)}
+.tab::after{
+  height:1.5px;
+  background:linear-gradient(90deg,rgba(255,255,255,.08),rgba(240,244,247,.92),rgba(255,255,255,.08));
+}
+.tab.on{color:#f3f6f8}
+
+.btn,.hbtn,.hbtn-p,.chip,.fi,.fse{border-radius:8px}
+.btn,.hbtn,.hbtn-p{
+  min-height:30px;
+  letter-spacing:.03em;
+}
+.hbtn{
+  background:rgba(255,255,255,.02);
+  border-color:rgba(255,255,255,.07);
+}
+.hbtn:hover{
+  background:rgba(255,255,255,.04);
+  border-color:rgba(255,255,255,.14);
+  color:#f1f4f7;
+}
+.hbtn-p{
+  color:#050607;
+  box-shadow:0 10px 24px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.18);
+}
+.hbtn-p:hover{background:#f0a83c;box-shadow:0 12px 26px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.22)}
+.bp{box-shadow:0 8px 18px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.16)}
+.bp:hover{box-shadow:0 12px 26px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.2)}
+.bs{
+  background:linear-gradient(180deg,rgba(36,42,50,.96),rgba(26,30,36,.98));
+  border-color:rgba(255,255,255,.07);
+  color:#d0d7df;
+}
+.bs:hover{
+  background:linear-gradient(180deg,rgba(44,50,58,.96),rgba(30,34,40,.98));
+  border-color:rgba(255,255,255,.14);
+  color:#f1f4f7;
+}
+
+.fi,.fse{
+  background:linear-gradient(180deg,rgba(28,32,38,.98),rgba(18,21,26,.98)) !important;
+  border:1px solid rgba(255,255,255,.08) !important;
+  color:#eff3f6 !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
+}
+.fi:focus,.fse:focus{
+  border-color:rgba(255,255,255,.16) !important;
+  box-shadow:0 0 0 1px rgba(255,255,255,.07),0 0 0 4px rgba(255,255,255,.018) !important;
+}
+
+.chip{
+  padding:4px 8px;
+  border-radius:999px;
+  font-size:8px;
+  letter-spacing:.12em;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+.module-card .ctit{margin-bottom:12px}
+.module-board{display:grid;gap:10px}
+.module-group{
+  padding:10px 11px;
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:10px;
+  background:linear-gradient(180deg,rgba(255,255,255,.018),rgba(255,255,255,.008));
+}
+.module-group-hd{
+  margin-bottom:8px;
+  font-size:7.5px;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:rgba(255,255,255,.45);
+  font-weight:700;
+}
+.module-cluster{display:flex;flex-wrap:wrap;gap:6px}
+.module-foot{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+
+.tbl thead th{color:#d7dde4}
+.tbl tbody tr:hover{background:rgba(255,255,255,.018)}
+.note{border-radius:10px}
+.empty{padding:22px 18px}
+
+
+
+/* ═══════════════════════════════════════════
+   LAYOUT / SCALE SAFEGUARDS · 2026-04-01
+═══════════════════════════════════════════ */
+:root{
+  --sw:clamp(218px,18.5vw,248px);
+  --hh:auto;
+  --ch:clamp(84px,13vh,112px);
+}
+html{font-size:clamp(11px,.72vw,12.5px)}
+body{min-width:320px}
+#root,#layout,#main,#content,.page,.card,.card-ha,.cflat,.sc,.mc,.qa,.crow,.empty{min-width:0}
+#layout{min-height:0}
+#content{padding:clamp(14px,1.35vw,20px);overflow-x:auto}
+#con{height:var(--ch)}
+
+/* text wrapping / overflow protection */
+.h-user,.sb-id,.ph,.pa,.kv,.fr,.fx,.ctit,.module-board,.module-group,.module-cluster{min-width:0}
+.h-un,.h-uh,.sb-name,.sb-host,.sf-v,.vv,.vv.mo,.mo,.e-s,.scan-sub,.lm,.crm,.crn,.qa-s,.ps,.note,.tl,.tsl{
+  overflow-wrap:anywhere;
+  word-break:break-word;
+}
+
+/* header scales more gracefully */
+#hdr{
+  min-height:43px;
+  height:auto;
+  flex-wrap:wrap;
+  row-gap:6px;
+  align-content:center;
+}
+.hgap{min-width:8px}
+#hclock{margin-left:auto}
+.hbtn,.hbtn-p{flex:0 0 auto}
+.pill{flex:0 0 auto}
+
+/* sidebar spacing and session block */
+#sb{width:var(--sw)}
+.sb-id{padding:14px 14px 12px}
+.sb-host{display:block;max-width:100%}
+.sb-status{grid-template-columns:repeat(3,minmax(0,1fr))}
+
+/* forms and controls */
+.fx{gap:8px}
+.fr,.f1{min-width:0}
+.fi,.fse,.btn,.hbtn,.hbtn-p{max-width:100%}
+.fi,.fse{width:100%}
+.btn{justify-content:center;text-align:center;white-space:normal;line-height:1.35}
+
+/* page headers and tabs */
+.ph{gap:10px;align-items:flex-start;flex-wrap:wrap}
+.pa{display:flex;flex-wrap:wrap;gap:8px;max-width:100%}
+.ts{max-width:100%;padding-right:2px}
+.tab{flex:0 0 auto}
+
+/* data layouts */
+.kv{grid-template-columns:minmax(96px,120px) minmax(0,1fr)}
+.tbl{table-layout:fixed}
+.tbl th,.tbl td{overflow-wrap:anywhere;word-break:break-word;vertical-align:top}
+.tbl .mo{white-space:normal}
+
+/* grid fallback scaling */
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+
+/* medium screens */
+@media (max-width: 1380px){
+  .g4{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width: 1160px){
+  :root{--sw:210px}
+  #content{padding:14px}
+  .g3,.g4{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .kv{grid-template-columns:92px minmax(0,1fr)}
+  .module-foot{gap:6px}
+}
+
+/* compact desktop / tablet */
+@media (max-width: 980px){
+  #layout{flex-direction:column}
+  #sb{
+    width:100%;
+    max-width:none;
+    border-right:none;
+    border-bottom:1px solid var(--ln);
+    max-height:42vh;
+  }
+  .ng{padding:6px 0}
+  .ph{margin-bottom:12px;padding-bottom:10px}
+  .g2,.g3,.g4{grid-template-columns:minmax(0,1fr)}
+  .kv{grid-template-columns:minmax(84px,110px) minmax(0,1fr)}
+  .sb-status{grid-template-columns:repeat(3,minmax(90px,1fr))}
+  #con{height:96px}
+}
+
+/* phones / very narrow widths */
+@media (max-width: 680px){
+  html{font-size:11px}
+  body::before{background-size:20px 20px}
+  #hdr{padding:10px 12px}
+  .brand{width:100%;justify-content:flex-start}
+  .h-user{min-width:0;width:100%}
+  #hclock{margin-left:0;min-width:auto;text-align:left}
+  .pill,.hbtn,.hbtn-p{min-height:28px}
+  .ts{gap:2px}
+  .tab{padding:7px 9px 6px;font-size:9.5px}
+  .btn{width:100%}
+  .fx{flex-direction:column;align-items:stretch}
+  .sb-status{grid-template-columns:1fr}
+  .kv{grid-template-columns:1fr}
+  .kk,.vv{padding:4px 0}
+  .tbl th,.tbl td{padding:5px 6px}
+  #con{height:88px}
+}
+
+
+
+/* ═══════════════════════════════════════════════════════
+   SPACING / READABILITY  v2 · 2026-04-02
+   Fine-tuned: jailbreak, event log, all submenus
+═══════════════════════════════════════════════════════ */
+
+/* ── Global base rhythm ─────────────────────────────── */
+#content{padding:clamp(16px,1.45vw,22px)}
+.page{padding-bottom:12px}
+
+/* Page header */
+.ph{margin-bottom:20px;padding-bottom:15px;row-gap:10px}
+.ps{line-height:1.75;row-gap:4px;flex-wrap:wrap}
+
+/* Notices — more air */
+.note{padding:10px 13px;line-height:1.85;margin-bottom:14px}
+
+/* Cards & surfaces */
+.card,.card-ha,.cflat,.sc,.mc,.qa,.crow,.empty{padding:15px}
+
+/* Section headers inside cards */
+.sh{margin-bottom:11px}
+.ctit{margin-bottom:13px;line-height:1.65}
+
+/* Form rows */
+.fr{margin-bottom:13px}
+.fl{margin-bottom:5px;line-height:1.5}
+.fi,.fse{min-height:34px;padding:8px 10px;line-height:1.5}
+
+/* Buttons */
+.btn,.hbtn,.hbtn-p{min-height:32px;padding:7px 12px;line-height:1.45}
+
+/* Toggle rows — the most critical crowding fix */
+.tr{
+  padding:10px 0;          /* was 5.5px, now 10px top+bottom */
+  gap:12px;
+  align-items:flex-start;
+}
+.tl{font-size:11px;line-height:1.6}
+.tsl{margin-top:4px;line-height:1.7;font-size:9px}
+
+/* KV pairs */
+.kv{row-gap:0}
+.kk,.vv{padding:7px 0;line-height:1.65}
+
+/* Flex rows */
+.fx{align-items:flex-start;flex-wrap:wrap}
+
+/* Tab strips */
+.ts{margin-bottom:16px;padding-bottom:1px}
+.tab{line-height:1.5;padding:7px 13px 6px}
+
+/* Grid gaps */
+.g2,.g3,.g4{gap:14px}
+
+/* Tables */
+.tbl th{padding:8px 9px;line-height:1.55}
+.tbl td{padding:9px 9px;line-height:1.7}
+
+/* Carrier rows */
+.crow{padding:12px 14px}
+.crow+.crow{margin-top:8px}
+
+/* Quick-access */
+.qa{padding:15px 14px}
+.qa-s{line-height:1.75;margin-top:5px}
+
+/* Empty states */
+.empty{padding:28px 20px;gap:11px}
+.empty .e-s{margin-top:6px;line-height:1.9}
+
+/* ══════════════════════════════════════════════════════
+   JAILBREAK OPTION ROWS  — purpose-built toggle blocks
+   Replaces .tr for complex multi-line toggle rows
+══════════════════════════════════════════════════════ */
+.jb-opt{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:16px;
+  padding:14px 0;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.jb-opt:last-of-type{border-bottom:none}
+.jb-opt-hd{flex:1;min-width:0}
+.jb-opt-lbl{
+  font-size:11px;
+  font-weight:500;
+  color:var(--t0);
+  line-height:1.55;
+  letter-spacing:.01em;
+}
+.jb-opt-sub{
+  font-size:9.5px;
+  color:var(--t2);
+  margin-top:5px;
+  line-height:1.7;
+  letter-spacing:.01em;
+}
+/* Hash block inside a jb-opt — each hash on its own line */
+.jb-hash-block{
+  margin-top:8px;
+  padding:8px 10px;
+  background:rgba(0,0,0,.22);
+  border:1px solid rgba(255,255,255,.055);
+  border-radius:4px;
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+}
+.jb-hash-row{
+  display:grid;
+  grid-template-columns:52px 1fr;
+  align-items:baseline;
+  gap:8px;
+}
+.jb-hash-algo{
+  font-size:8px;
+  font-weight:700;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--t3);
+  white-space:nowrap;
+  flex-shrink:0;
+}
+.jb-hash-val{
+  font-family:var(--fm);
+  font-size:8.5px;
+  color:var(--t2);
+  word-break:break-all;
+  overflow-wrap:anywhere;
+  line-height:1.65;
+}
+/* Toggle in jb-opt — sits flush top-right */
+.jb-opt .tog{
+  flex-shrink:0;
+  margin-top:2px;
+}
+
+/* Settings page toggle rows — more air */
+#pg-cfg .card-ha{max-width:min(100%,500px)}
+#pg-cfg .tr{padding:12px 0;gap:14px}
+#pg-cfg .tl{font-size:11px;line-height:1.55}
+#pg-cfg .tsl{font-size:9px;margin-top:4px;line-height:1.7}
+#pg-cfg .tog{margin-top:2px;flex-shrink:0}
+#pg-jb .card-ha{padding:18px 17px}
+#pg-jb .fr{margin-bottom:14px}
+#pg-jb .sh{margin-bottom:12px}
+#pg-jb .ts{margin-bottom:20px}
+#pg-jb .note{margin-bottom:16px;line-height:1.9}
+#pg-jb .g2{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:16px;
+  align-items:start;
+}
+#pg-jb .kv{grid-template-columns:minmax(120px,140px) minmax(0,1fr)}
+#pg-jb .kk{padding:8px 10px 8px 0;line-height:1.6;font-size:10px}
+#pg-jb .vv{padding:8px 0 8px 6px;line-height:1.65;font-size:10.5px}
+
+
+
+/* ── EVENT LOG PAGE — comprehensive fix ─────────────── */
+
+/* Outer container */
+#pg-evlog .cflat{
+  padding:0;
+  overflow:hidden;
+}
+
+/* The scrollable log body */
+#pg-evlog #fulllog{
+  font-size:10.5px !important;
+  line-height:1;             /* reset — handled per-line below */
+  padding:6px 15px 10px !important;
+  max-height:calc(100vh - 225px) !important;
+}
+
+/* Each log line — grid layout: timestamp | level | message */
+#pg-evlog .ll,
+#con .ll{
+  display:grid;
+  grid-template-columns:86px 42px minmax(0,1fr);
+  align-items:baseline;
+  column-gap:0;
+  row-gap:0;
+  padding:5px 0;
+  border-bottom:1px solid rgba(255,255,255,.028);
+  min-height:0;
+}
+#pg-evlog .ll:last-child,
+#con .ll:last-child{border-bottom:none}
+
+/* Timestamp column */
+#pg-evlog .lt,
+#con .lt{
+  font-size:9px;
+  color:rgba(255,255,255,.28);
+  padding-right:6px;
+  white-space:nowrap;
+  letter-spacing:.03em;
+  line-height:1.7;
+  font-variant-numeric:tabular-nums;
+}
+
+/* Level badge column */
+#pg-evlog .lI,#pg-evlog .lW,#pg-evlog .lE,
+#con .lI,#con .lW,#con .lE{
+  font-size:8.5px;
+  font-weight:700;
+  letter-spacing:.06em;
+  line-height:1.7;
+  padding-right:4px;
+  white-space:nowrap;
+}
+
+/* Message column — wraps cleanly */
+#pg-evlog .lm,
+#con .lm{
+  font-size:10.5px;
+  line-height:1.7;
+  color:#cdd6e0;
+  white-space:normal;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+  padding-left:4px;
+}
+
+/* Page header actions */
+#pg-evlog .ph .pa{gap:8px}
+
+/* ── ALL SUBMENU PAGES — prevent overflow/overlap ───── */
+
+/* Constrained-width cards get full width but respect limits */
+[style*="max-width"]{
+  width:100%;
+  max-width:100% !important;
+}
+/* Re-apply capped widths via data- approach isn't available,
+   so use a generous but sane single-column cap */
+#pg-cfg  .card-ha,#pg-cfg  .cflat,
+#pg-util .card-ha,#pg-util .cflat,
+#pg-ssh  .card-ha,#pg-ssh  .cflat,
+#pg-act  .card-ha,#pg-act  .cflat,
+#pg-nwk  .card-ha,#pg-nwk  .cflat,
+#pg-ios  .card-ha,#pg-ios  .cflat,
+#pg-au   .card-ha,#pg-au   .cflat,
+#pg-shsh .card-ha,#pg-shsh .cflat,
+#pg-api  .card-ha,#pg-api  .cflat,
+#pg-tls  .card-ha,#pg-tls  .cflat{
+  padding:16px;
+  max-width:min(100%,520px);  /* comfortable single-column width */
+}
+
+/* For the api/ios/shsh pages that use full-width tables — don't cap */
+#pg-api  .cflat,
+#pg-ios  .card-ha:has(.tbl),
+#pg-shsh .card-ha:has(.tbl){
+  max-width:100%;
+}
+
+/* Toggle rows in submenus */
+#pg-cfg .tr, #pg-util .tr, #pg-ssh .tr,
+#pg-act .tr, #pg-nwk .tr, #pg-ios .tr,
+#pg-au  .tr, #pg-shsh .tr,#pg-api .tr,
+#pg-tls .tr{
+  padding:10px 0;
+  gap:12px;
+  align-items:flex-start;
+}
+
+/* Flex rows — don't crush inputs */
+#pg-cfg .fx, #pg-util .fx, #pg-ssh .fx,
+#pg-act .fx, #pg-nwk .fx, #pg-ios .fx,
+#pg-au  .fx, #pg-shsh .fx,#pg-api .fx,
+#pg-tls .fx{
+  row-gap:8px;
+  flex-wrap:wrap;
+}
+
+/* ── SHSH / futurerestore two-column grid ───────────── */
+#pg-shsh #sh3 .g2{
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  align-items:start;
+  gap:14px;
+}
+
+/* ── iOS table — tighter mono cells ─────────────────── */
+#pg-ios .tbl td.mo{
+  white-space:normal;
+  word-break:break-all;
+  font-size:9px;
+}
+
+/* ── AU page carrier rows ────────────────────────────── */
+#pg-au .crow .crm{font-size:8.5px;line-height:1.6}
+
+/* ── General .kv overflow protection ────────────────── */
+.kv{
+  grid-template-columns:minmax(96px,128px) minmax(0,1fr);
+}
+.kk{overflow-wrap:anywhere;word-break:break-word}
+.vv{overflow-wrap:anywhere;word-break:break-word}
+.vv.mo{
+  font-size:9.5px;
+  word-break:break-all;
+  overflow-wrap:anywhere;
+}
+
+/* ── Table overflow ──────────────────────────────────── */
+.tbl{table-layout:fixed}
+.tbl th,.tbl td{overflow-wrap:anywhere;word-break:break-word;vertical-align:top}
+.tbl .mo{white-space:normal;word-break:break-all}
+
+/* ── Responsive breakpoints ──────────────────────────── */
+@media (max-width:1240px){
+  #pg-jb .g2{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:980px){
+  .card,.card-ha,.cflat,.sc,.mc,.qa,.crow,.empty{padding:14px}
+  #pg-evlog .ll,#con .ll{
+    grid-template-columns:80px 40px minmax(0,1fr);
+  }
+}
+@media (max-width:680px){
+  #pg-evlog .ll,#con .ll{
+    grid-template-columns:1fr;
+    gap:2px;
+    padding:7px 0;
+  }
+  #pg-evlog .lt,#pg-evlog .lI,#pg-evlog .lW,#pg-evlog .lE,
+  #con .lt,#con .lI,#con .lW,#con .lE{
+    min-width:0;
+  }
+  #pg-jb .kv{grid-template-columns:1fr}
+  #pg-jb .g2{grid-template-columns:minmax(0,1fr)}
+  #pg-cfg .card-ha,#pg-util .card-ha,#pg-ssh .card-ha,
+  #pg-act .card-ha,#pg-nwk .card-ha,#pg-ios .card-ha,
+  #pg-au .card-ha, #pg-shsh .card-ha,#pg-api .card-ha,
+  #pg-tls .card-ha{max-width:100%}
+}
+
+</style>
+</head>
+<body>
+<div id="root">
+
+<!-- ████ HEADER ████████████████████████████████████████ -->
+<div id="hdr">
+  <div class="brand">
+    <span class="b-bolt">⚡</span>
+    <span class="b-name">Chimera</span>
+    <span class="b-tag">RS Edition</span>
+    <span class="b-ver">1.3.13</span>
+  </div>
+  <div class="hdiv"></div>
+  <div class="pill p-live"><span class="cring"><span class="dot"></span></span>LIVE</div>
+  <div class="pill p-mute" id="dc-pill">0 DEVICES</div>
+  <div class="hdiv"></div>
+  <div class="h-user"><span class="h-un">admin_user</span><span class="h-uh">user_computer · x86_64</span></div>
+  <div class="hgap"></div>
+  <div id="hclock">--:--:--</div>
+  <div class="pill p-warn">RUST_BUILD.</div>
+  <button class="hbtn sh" onclick="openMdl('mdl-about')">About</button>
+  <button class="hbtn-p sh sh-a" onclick="doScan()"><span class="spin">⟳</span>Quick Scan</button>
+</div>
+
+<div id="layout">
+<!-- ████ SIDEBAR ██████████████████████████████████████ -->
+<div id="sb">
+  <div class="sb-id">
+    <div class="sb-role">Session</div>
+    <div class="sb-name">admin_user</div>
+    <div class="sb-host">user_computer · macOS 10.14.6</div>
+    <div class="sb-status">
+      <span class="sb-si ok"><span class="sb-sid"></span>Worker</span>
+      <span class="sb-si wa"><span class="sb-sid"></span>ADB</span>
+      <span class="sb-si ok"><span class="sb-sid"></span>libusb</span>
+    </div>
+  </div>
+
+  <div class="ng">
+    <div class="ng-hd"><span class="ng-lbl">Workspace</span></div>
+    <div class="ni sh on" data-pg="dash"><span class="ni-ico">▦</span>Dashboard</div>
+    <div class="ni sh" data-pg="devs"><span class="ni-ico">◫</span>Devices</div>
+    <div class="ni sh" data-pg="dld"><span class="ni-ico">↓</span>Downloads</div>
+    <div class="ni sh" data-pg="hist"><span class="ni-ico">◷</span>Work History</div>
+    <div class="ni sh" data-pg="util"><span class="ni-ico">⚒</span>Utilities</div>
+    <div class="ni sh" data-pg="cfg"><span class="ni-ico">⚙</span>Settings</div>
+  </div>
+  <div class="nbsep"></div>
+  <div class="ng">
+    <div class="ng-hd"><span class="ng-lbl">Device</span></div>
+    <div class="ni sh" data-pg="dinfo"><span class="ni-ico">ℹ</span>Device Info</div>
+    <div class="ni sh" data-pg="jb"><span class="ni-ico">◎</span>Jailbreak</div>
+    <div class="ni sh" data-pg="ssh"><span class="ni-ico">⇄</span>SSH · VPN</div>
+    <div class="ni sh" data-pg="act"><span class="ni-ico">☁</span>Activation</div>
+    <div class="ni sh" data-pg="nwk"><span class="ni-ico">◈</span>Network</div>
+    <div class="ni sh" data-pg="tls"><span class="ni-ico">⚒</span>Tools</div>
+  </div>
+  <div class="nbsep"></div>
+  <div class="ng">
+    <div class="ng-hd"><span class="ng-lbl">Platform</span></div>
+    <div class="ni sh" data-pg="ios"><span class="ni-ico">⌘</span>Apple iOS</div>
+    <div class="ni sh" data-pg="au"><span class="ni-ico">◉</span>AU Unlock</div>
+    <div class="ni sh" data-pg="shsh"><span class="ni-ico">◰</span>SHSH Blobs</div>
+    <div class="ni sh" data-pg="api"><span class="ni-ico">⬡</span>API Tools</div>
+    <div class="ni sh" data-pg="evlog"><span class="ni-ico">≡</span>Event Log</div>
+  </div>
+  <div class="nbsep"></div>
+  <div class="ng">
+    <div class="ng-hd"><span class="ng-lbl">Service</span></div>
+    <div class="ni sh" data-pg="samsung"><span class="ni-ico">📱</span>Samsung</div>
+    <div class="ni sh" data-pg="xiaomi"><span class="ni-ico">📱</span>Xiaomi</div>
+    <div class="ni sh" data-pg="huawei"><span class="ni-ico">📱</span>Huawei</div>
+    <div class="ni sh" data-pg="edl"><span class="ni-ico">↓</span>EDL Mode</div>
+    <div class="ni sh" data-pg="fastboot"><span class="ni-ico">⚡</span>Fastboot</div>
+    <div class="ni sh" data-pg="repair"><span class="ni-ico">🔧</span>Repair</div>
+    <div class="ni sh" data-pg="zebra"><span class="ni-ico">📦</span>Zebra Fleet</div>
+    <div class="ni sh" data-pg="pttpro"><span class="ni-ico">📡</span>PTT Pro</div>
+  </div>
+
+  <div id="sbf">
+    <div class="sf-row"><span class="sf-k">Build</span><span class="sf-v">2026-03-31 · 14:39 UTC</span></div>
+    <div class="sf-row"><span class="sf-k">Uptime</span><span class="sf-v" id="uptime">00:00:00</span></div>
+    <div class="sf-row"><span class="sf-k">Hash</span><span class="sf-v" style="font-size:7px;color:var(--t3)">a3fb6e96e80a</span></div>
+  </div>
+</div>
+
+<!-- ████ MAIN ██████████████████████████████████████████ -->
+<div id="main">
+<div id="content">
+
+<!-- ░░ DASHBOARD ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="page active" id="pg-dash">
+  <div class="ph">
+    <div>
+      <div class="ph-idx">01 · WORKSPACE</div>
+      <div class="pt">Dashboard</div>
+      <div class="ps"><span>Overview</span><span class="ps-sep">·</span><span>Connection Mode</span><span class="ps-sep">·</span><span>Active Workspace</span></div>
+    </div>
+    <div class="pa"><button class="btn bs bxs sh" onclick="nav('dinfo')">Device Info ↗</button></div>
+  </div>
+
+  <div class="g2 mb10">
+    <div class="mc sel sh sh-a" id="mc0" onclick="pickMode(0)">
+      <div class="mc-tag">Active</div>
+      <div class="mc-t">AUTO DETECT</div>
+      <div class="mc-d">Continuously monitors USB, ADB and service channels for newly connected devices. Recommended for daily repair workflow.</div>
+    </div>
+    <div class="mc sh" id="mc1" onclick="pickMode(1)">
+      <div class="mc-t">DEVICE WIZARD</div>
+      <div class="mc-d">Guided step-by-step sequence — device info read, pre-check, repair execution and post-action result validation.</div>
+    </div>
+  </div>
+
+  <div class="g4 mb16">
+    <div class="sc sh sh-a"><div class="sc-br"></div><div class="sc-l">Connected Devices</div><div class="sc-v am" id="s-dev">0</div><div class="sc-m">USB · ADB · Fastboot</div></div>
+    <div class="sc sh sh-a"><div class="sc-br"></div><div class="sc-l">Supported Models</div><div class="sc-v" id="s-mod">0</div><div class="sc-m">Device database entries</div></div>
+    <div class="sc sh sh-a"><div class="sc-br"></div><div class="sc-l">Active Workspace</div><div class="sc-v" style="font-size:12px;margin-top:5px">Device Info</div><div class="sc-m">Current service tab</div></div>
+    <div class="sc sh sh-a"><div class="sc-br"></div><div class="sc-l">Last Operation</div><div class="sc-v" style="font-size:12px;margin-top:5px">No jobs yet</div><div class="sc-m">Recent status</div></div>
+  </div>
+
+  <div class="sh mb8"><div class="sb2"></div><div class="sl">Quick Access</div></div>
+  <div class="g3 mb16">
+    <div class="qa sh" onclick="nav('devs')"><div class="qa-ico">◫</div><div class="qa-t">Scan Devices</div><div class="qa-s">USB · ADB · Fastboot · Download mode</div></div>
+    <div class="qa sh" onclick="nav('ios')"><div class="qa-ico">⌘</div><div class="qa-t">Apple Operations</div><div class="qa-s">DFU · IPSW flash · iCloud · Passcode</div></div>
+    <div class="qa sh" onclick="nav('au')"><div class="qa-ico">◉</div><div class="qa-t">AU Carrier Unlock</div><div class="qa-s">Telstra · Optus · Vodafone AU + more</div></div>
+  </div>
+
+  <div class="sh mb8"><div class="sb2"></div><div class="sl">System Status</div></div>
+  <div class="g2">
+    <div class="card-ha sh">
+      <div class="ctit">Runtime Environment</div>
+      <div class="kv">
+        <div class="kk">Version</div><div class="vv">ChimeraRS v1.3.13</div>
+        <div class="kk">Build timestamp</div><div class="vv mo">2026-03-31 · 14:39:08 UTC</div>
+        <div class="kk">Architecture</div><div class="vv">macOS · x86_64-apple-darwin</div>
+        <div class="kk">Worker pool</div><div class="vv G">Running</div>
+        <div class="kk">ADB daemon</div><div class="vv A">Not found in PATH</div>
+        <div class="kk kv-e">libusb</div><div class="vv G kv-e">v0.9.4 — linked</div>
+      </div>
+    </div>
+    <div class="card-ha sh module-card">
+      <div class="ctit">Loaded Modules · Runtime Topology</div>
+      <div class="module-board">
+        <div class="module-group">
+          <div class="module-group-hd">Transport</div>
+          <div class="module-cluster"><span class="chip cG">adb</span><span class="chip cG">fastboot</span><span class="chip cG">edl</span><span class="chip cG">libusb</span></div>
+        </div>
+        <div class="module-group">
+          <div class="module-group-hd">Platform</div>
+          <div class="module-cluster"><span class="chip cG">apple</span><span class="chip cG">samsung</span><span class="chip cG">xiaomi</span><span class="chip cG">huawei</span><span class="chip cG">mtk</span><span class="chip cG">motorola</span><span class="chip cG">sony</span><span class="chip cG">nokia</span><span class="chip cG">oppo</span></div>
+        </div>
+        <div class="module-group">
+          <div class="module-group-hd">Workspace</div>
+          <div class="module-cluster"><span class="chip cG">core</span><span class="chip cG">devices</span><span class="chip cG">firmware</span><span class="chip cG">utils</span><span class="chip cG">gui</span><span class="chip cG">api</span></div>
+        </div>
+        <div class="module-foot"><span class="chip cA">18 active modules</span><span class="chip cB">148 files · 27,244 LOC</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ░░ DEVICES ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="page" id="pg-devs">
+  <div class="ph"><div><div class="ph-idx">02 · WORKSPACE</div><div class="pt">Devices</div><div class="ps">Connected and discovered devices across all transports</div></div><div class="pa"><button class="btn bs bxs sh" onclick="doScan()">⟳ Refresh</button><button class="btn bp bxs sh sh-a">+ Manual</button></div></div>
+  <div class="ts"><div class="tab sh on" onclick="stab(this,'dv',0)">USB</div><div class="tab sh" onclick="stab(this,'dv',1)">ADB</div><div class="tab sh" onclick="stab(this,'dv',2)">Fastboot</div><div class="tab sh" onclick="stab(this,'dv',3)">EDL · Download</div><div class="tab sh" onclick="stab(this,'dv',4)">Apple USB-MUX</div></div>
+  <div id="dv0"><div class="empty"><div class="e-ico">⊡</div><div class="e-t">No USB Devices Detected</div><div class="e-s">Connect a device via USB cable. Enable USB debugging on Android; authorise this computer on Apple devices.</div></div></div>
+  <div id="dv1" class="hidden"><div class="note ni2 sm mb10">ADB daemon not found in PATH — install via <span class="mo">brew install android-platform-tools</span></div><div class="empty"><div class="e-ico">◈</div><div class="e-t">ADB Unavailable</div><div class="e-s">Configure ADB binary path in Settings → ADB · Paths, then reconnect.</div></div></div>
+  <div id="dv2" class="hidden"><div class="empty"><div class="e-ico">⚡</div><div class="e-t">No Fastboot Devices</div><div class="e-s">Boot device into Fastboot mode (Vol– + Power), then connect via USB.</div></div></div>
+  <div id="dv3" class="hidden"><div class="note nw sm mb10">Qualcomm EDL requires device in 9008 Download Mode with appropriate host-side USB driver installed.</div><div class="empty"><div class="e-ico">↓</div><div class="e-t">No EDL · Download Devices</div><div class="e-s">Hold Vol+ + Vol– during power-on, or use a hardware test-point to force EDL on Qualcomm targets.</div></div></div>
+  <div id="dv4" class="hidden"><div class="empty"><div class="e-ico">⌘</div><div class="e-t">No Apple Devices</div><div class="e-s">Connect iPhone or iPad via USB. Tap "Trust This Computer" when prompted on the device.</div></div></div>
+</div>
+
+<!-- ░░ DOWNLOADS ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="page" id="pg-dld">
+  <div class="ph"><div><div class="ph-idx">03 · WORKSPACE</div><div class="pt">Downloads</div><div class="ps">Firmware, IPSW and resource queue management</div></div><div class="pa"><button class="btn bp bxs sh sh-a">+ New Download</button></div></div>
+  <div class="ts"><div class="tab sh on" onclick="stab(this,'dl',0)">Queue</div><div class="tab sh" onclick="stab(this,'dl',1)">IPSW Finder</div><div class="tab sh" onclick="stab(this,'dl',2)">Samsung Firmware</div><div class="tab sh" onclick="stab(this,'dl',3)">Completed</div></div>
+  <div id="dl0"><div class="empty"><div class="e-ico">↓</div><div class="e-t">Download Queue Empty</div><div class="e-s">Use IPSW Finder or Samsung Firmware to queue firmware downloads.</div></div></div>
+  <div id="dl1" class="hidden"><div class="card-ha sh mb10"><div class="sh mb8"><div class="sb2"></div><div class="sl">IPSW Firmware Search</div></div><div class="fx g8 mb9"><div class="f1"><select class="fse"><option>Select a device model…</option><option>iPhone 17 Pro Max (iPhone18,5)</option><option>iPhone 17 Pro (iPhone18,4)</option><option>iPhone 17 Air (iPhone18,2)</option><option>iPhone 16 Pro Max (iPhone17,2)</option><option>iPhone 16 Pro (iPhone17,1)</option><option>iPhone 16 (iPhone17,3)</option><option>iPhone 16e (iPhone17,5)</option><option>iPhone 15 Pro Max (iPhone16,2)</option><option>iPhone 15 (iPhone15,4)</option></select></div><button class="btn bp sh sh-a">Search</button></div><div class="note ni2 xs">Results from ipsw.me API. Only signed builds can be restored via Apple TSS.</div></div></div>
+  <div id="dl2" class="hidden"><div class="card-ha sh mb10"><div class="sh mb8"><div class="sb2"></div><div class="sl">Samsung Firmware Lookup</div></div><div class="fx g8 mb9"><input class="fi f1" placeholder="Model number — e.g. SM-S928B"><input class="fi" placeholder="CSC" style="width:80px"><button class="btn bp sh sh-a">Fetch</button></div><div class="xs tM">Queries samfw.com — falls back to portal link when direct unavailable.</div></div></div>
+  <div id="dl3" class="hidden"><div class="empty"><div class="e-ico">✓</div><div class="e-t">No Completed Downloads</div><div class="e-s">Completed firmware downloads appear here with SHA-1 and MD5 verification.</div></div></div>
+</div>
+
+<!-- ░░ HISTORY ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="page" id="pg-hist">
+  <div class="ph"><div><div class="ph-idx">04 · WORKSPACE</div><div class="pt">Work History</div><div class="ps">Chronological record of all device operations and service repairs</div></div><div class="pa"><button class="btn bs bxs sh">Export CSV</button><button class="btn bd bxs sh">Clear Log</button></div></div>
+  <div class="cflat sh"><table class="tbl"><thead><tr><th>Timestamp</th><th>Device</th><th>Operation</th><th>Result</th><th>Duration</th></tr></thead><tbody><tr><td class="mo">2026-03-31 14:39</td><td class="tM">—</td><td>GUI Smoke Test</td><td><span class="chip cG">Success</span></td><td class="tD xs">0.46 s</td></tr><tr><td colspan="5" style="text-align:center;padding:20px 8px;color:var(--t3)">No prior operations recorded in this session</td></tr></tbody></table></div>
+</div>
+
+<!-- ░░ UTILITIES ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="page" id="pg-util">
+  <div class="ph"><div><div class="ph-idx">05 · WORKSPACE</div><div class="pt">Utilities</div><div class="ps">IMEI validation · NCK calculation · MAC tools · cryptographic hashing · QR generation</div></div></div>
+  <div class="ts"><div class="tab sh on" onclick="stab(this,'ut',0)">IMEI Tools</div><div class="tab sh" onclick="stab(this,'ut',1)">NCK Calc</div><div class="tab sh" onclick="stab(this,'ut',2)">MAC Tools</div><div class="tab sh" onclick="stab(this,'ut',3)">Crypto · Hash</div><div class="tab sh" onclick="stab(this,'ut',4)">QR Code</div></div>
+  <div id="ut0"><div class="g2"><div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Luhn Algorithm Validator</div></div><div class="fr"><label class="fl">IMEI Number</label><input class="fi mo" placeholder="Enter 15-digit IMEI…" maxlength="15" id="imeiIn"></div><button class="btn bp bxs sh sh-a" onclick="doImei()">Validate</button><div id="imeiR" class="mt6 sm"></div></div><div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">TAC · SNR Structure Decoder</div></div><div class="fr"><label class="fl">IMEI</label><input class="fi mo" placeholder="Enter 15-digit IMEI…" id="imeiD"></div><button class="btn bs bxs sh" onclick="doDec()">Decode Structure</button><div id="imeiDR" class="mt6"></div></div></div></div>
+  <div id="ut1" class="hidden"><div class="card-ha sh" style="max-width:420px"><div class="sh mb8"><div class="sb2"></div><div class="sl">NCK Calculator</div></div><div class="fr"><label class="fl">IMEI</label><input class="fi mo" placeholder="15-digit IMEI…"></div><div class="fr"><label class="fl">Algorithm</label><select class="fse"><option>Samsung (DCK)</option><option>Nokia Algo 1</option><option>LG Standard</option><option>Motorola</option><option>HTC</option></select></div><button class="btn bp sh sh-a">Calculate NCK</button><div class="note nw mt8 xs">Authorised repair and educational use only.</div></div></div>
+  <div id="ut2" class="hidden"><div class="g2"><div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">MAC Address Validator</div></div><div class="fr"><label class="fl">MAC Address</label><input class="fi mo" placeholder="AA:BB:CC:DD:EE:FF"></div><button class="btn bp bxs sh sh-a">Validate</button></div><div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">MAC Derivation</div></div><div class="fr"><label class="fl">Input — Serial or IMEI</label><input class="fi mo" placeholder="Device serial or IMEI…"></div><button class="btn bs bxs sh">Derive MAC</button></div></div></div>
+  <div id="ut3" class="hidden"><div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Hash Generation</div></div><div class="fr"><label class="fl">Input Data</label><textarea class="ft" rows="3" placeholder="Enter data or paste file contents…" style="resize:vertical"></textarea></div><div class="fx g6 mb9"><button class="btn bs bxs sh">SHA-256</button><button class="btn bs bxs sh">SHA-1</button><button class="btn bs bxs sh">MD5</button><button class="btn bs bxs sh">CRC-32</button><button class="btn bs bxs sh">HMAC-SHA256</button></div><div class="fr"><label class="fl">Output Hash</label><input class="fi mo" readonly placeholder="Hash result will appear here…"></div></div></div>
+  <div id="ut4" class="hidden"><div class="card-ha sh" style="max-width:330px"><div class="sh mb8"><div class="sb2"></div><div class="sl">QR Code Generator</div></div><div class="fr"><label class="fl">Content</label><input class="fi" placeholder="Enter URL or text…"></div><button class="btn bp mb9 sh sh-a">Generate QR Code</button><div style="width:130px;height:130px;background:var(--s00);border:1px solid var(--ln);border-radius:var(--r);display:flex;align-items:center;justify-content:center;color:var(--t3);font-size:9px;letter-spacing:.08em">PREVIEW</div></div></div>
+</div>
+
+<!-- ░░ SETTINGS ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="page" id="pg-cfg">
+  <div class="ph"><div><div class="ph-idx">06 · WORKSPACE</div><div class="pt">Settings</div><div class="ps">Tool paths · appearance · behaviour · network proxy</div></div></div>
+  <div class="ts"><div class="tab sh on" onclick="stab(this,'cf',0)">ADB · Paths</div><div class="tab sh" onclick="stab(this,'cf',1)">Appearance</div><div class="tab sh" onclick="stab(this,'cf',2)">Behaviour</div><div class="tab sh" onclick="stab(this,'cf',3)">Network</div></div>
+  <div id="cf0"><div class="g2"><div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">External Tool Paths</div></div><div class="fr"><label class="fl">ADB Binary</label><input class="fi mo" value="/usr/local/bin/adb"></div><div class="fr"><label class="fl">Fastboot Binary</label><input class="fi mo" value="/usr/local/bin/fastboot"></div><div class="fr"><label class="fl">irecovery Binary</label><input class="fi mo" placeholder="Path to irecovery…"></div><div class="fr"><label class="fl">futurerestore Binary</label><input class="fi mo" placeholder="Path to futurerestore…"></div><button class="btn bp bxs sh sh-a">Save Configuration</button></div><div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Data Directories</div></div><div class="fr"><label class="fl">Application Data</label><input class="fi mo" value="~/Library/Application Support/ChimeraRS" readonly></div><div class="fr"><label class="fl">Cache</label><input class="fi mo" value="~/Library/Caches/chimera-rs" readonly></div><div class="fr"><label class="fl">SHSH Blob Store</label><input class="fi mo" value="~/Library/Application Support/ChimeraRS/blobs" readonly></div><div class="fr"><label class="fl">Downloads</label><input class="fi mo" value="~/Downloads" readonly></div><button class="btn bs bxs sh">Open in Finder</button></div></div></div>
+  <div id="cf1" class="hidden"><div class="card-ha sh" style="max-width:450px"><div class="sh mb8"><div class="sb2"></div><div class="sl">Theme Preferences</div></div><div class="tr"><div><div class="tl">Dark mode</div><div class="tsl">Always-on dark surface rendering</div></div><div class="tog on"></div></div><div class="tr"><div><div class="tl">Amber accent colour</div><div class="tsl">Chimera signature amber — #E8951E</div></div><div class="tog on"></div></div><div class="tr"><div><div class="tl">Compact sidebar</div><div class="tsl">Reduce navigation item height</div></div><div class="tog" onclick="this.classList.toggle('on')"></div></div><div class="tr"><div><div class="tl">Show console strip</div><div class="tsl">Runtime log panel at bottom</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div><div class="tr"><div><div class="tl">Dot-grid background</div><div class="tsl">Subtle 24px surface texture</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div><div class="tr"><div><div class="tl">Grain overlay</div><div class="tsl">Matte fractal noise — premium finish</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div><div class="tr"><div><div class="tl">Shimmer on hover</div><div class="tsl">Directional shimmer — SolarWinds style</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div></div></div>
+  <div id="cf2" class="hidden"><div class="card-ha sh" style="max-width:450px"><div class="sh mb8"><div class="sb2"></div><div class="sl">Application Behaviour</div></div><div class="tr"><div><div class="tl">Auto-detect on startup</div><div class="tsl">Begin USB and ADB scan on launch</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div><div class="tr"><div><div class="tl">Confirm destructive operations</div><div class="tsl">Confirmation dialog before irreversible actions</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div><div class="tr"><div><div class="tl">Audible completion alert</div><div class="tsl">System sound when long operations finish</div></div><div class="tog" onclick="this.classList.toggle('on')"></div></div><div class="tr"><div><div class="tl">Prevent display sleep</div><div class="tsl">Keep screen awake during active operations</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div></div></div>
+  <div id="cf3" class="hidden"><div class="card-ha sh" style="max-width:450px"><div class="sh mb8"><div class="sb2"></div><div class="sl">Network · Proxy</div></div><div class="tr"><div><div class="tl">Use system proxy</div></div><div class="tog" onclick="this.classList.toggle('on')"></div></div><div class="fr mt6"><label class="fl">Custom Proxy URL</label><input class="fi" placeholder="http://hostname:port"></div><div class="tr"><div><div class="tl">Verify TLS certificates</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div><div class="tr"><div><div class="tl">API mock mode</div><div class="tsl">Route all API calls to local mock server</div></div><div class="tog" onclick="this.classList.toggle('on')"></div></div></div></div>
+</div>
+
+<!-- ░░ DEVICE INFO ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="page" id="pg-dinfo">
+  <div class="ph"><div><div class="ph-idx">01 · DEVICE</div><div class="pt">Device Info</div><div class="ps">Hardware identifiers and software details for the active connected device</div></div></div>
+  <div class="empty"><div class="e-ico">◫</div><div class="e-t">No Device Selected</div><div class="e-s">Connect a device via USB or ADB, or use Auto Detect mode from the Dashboard to begin a session.</div></div>
+</div>
+
+<!-- ░░ JAILBREAK ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="page" id="pg-jb">
+  <div class="ph"><div><div class="ph-idx">02 · DEVICE</div><div class="pt">Jailbreak</div><div class="ps">Android root · iOS jailbreak · FRP bypass · Magisk · TWRP companion</div></div></div>
+  <div class="note ne xs mb10">Authorised device servicing only. Aust. Criminal Code Act 1995 §477–478 and US CFAA apply. Written device ownership or service authorisation required.</div>
+  <div class="ts"><div class="tab sh on" onclick="stab(this,'jb',0)">Android Root</div><div class="tab sh" onclick="stab(this,'jb',1)">iOS Jailbreak</div><div class="tab sh" onclick="stab(this,'jb',2)">Magisk</div><div class="tab sh" onclick="stab(this,'jb',3)">TWRP</div><div class="tab sh" onclick="stab(this,'jb',4)">FRP Bypass</div></div>
+  <div id="jb0"><div class="g2"><div class="card-ha sh">
+    <div class="sh mb10"><div class="sb2"></div><div class="sl">Android Root Pipeline · Magisk + TWRP</div></div>
+
+    <div class="fr"><label class="fl">Magisk APK Path</label>
+      <div class="fx g6"><input class="fi mo f1" placeholder="~/Downloads/Magisk-v27.0.apk"><button class="btn bs bxs sh">Browse</button></div>
+    </div>
+
+    <div class="fr"><label class="fl">TWRP App APK Path</label>
+      <div class="fx g6"><input class="fi mo f1" value="./TWRP/me.twrp.twrpapp-26.apk"><button class="btn bs bxs sh">Browse</button></div>
+    </div>
+
+    <div class="fr"><label class="fl">Recovery Strategy</label>
+      <select class="fse"><option>Patch boot.img + stage TWRP App</option><option>Install TWRP App after root</option><option>Use existing custom recovery</option><option>Magisk-only patch flow</option></select>
+    </div>
+
+    <div class="jb-opt">
+      <div class="jb-opt-hd">
+        <div class="jb-opt-lbl">Patch boot.img automatically</div>
+      </div>
+      <div class="tog on" onclick="this.classList.toggle('on')"></div>
+    </div>
+
+    <div class="jb-opt">
+      <div class="jb-opt-hd">
+        <div class="jb-opt-lbl">Stage bundled TWRP App after root</div>
+        <div class="jb-opt-sub">APK only — no recovery.img bundled in this archive</div>
+      </div>
+      <div class="tog on" onclick="this.classList.toggle('on')"></div>
+    </div>
+
+    <div class="jb-opt">
+      <div class="jb-opt-hd">
+        <div class="jb-opt-lbl">Verify TWRP bundle checksum before deploy</div>
+        <div class="jb-hash-block">
+          <div class="jb-hash-row"><span class="jb-hash-algo">SHA-256</span><span class="jb-hash-val">80d2d8aa6f325019fb57427aec<wbr>b06e044c9d8e070751ac09e85b<wbr>3642aa361f2b</span></div>
+          <div class="jb-hash-row"><span class="jb-hash-algo">MD5</span><span class="jb-hash-val">d459d75188852a0a41290c85b3849d2a</span></div>
+        </div>
+      </div>
+      <div class="tog on" onclick="this.classList.toggle('on')"></div>
+    </div>
+
+    <div style="margin-top:18px">
+      <button class="btn bp sh sh-a w100">Begin Root + TWRP Prep</button>
+    </div>
+
+  </div><div class="card-ha sh">
+    <div class="sh mb10"><div class="sb2"></div><div class="sl">Pre-Flight Check</div></div>
+    <div class="kv">
+      <div class="kk">Bootloader state</div><div class="vv A">No device</div>
+      <div class="kk">ADB root access</div><div class="vv tM">—</div>
+      <div class="kk">Custom recovery</div><div class="vv tM">Supply device-specific recovery.img</div>
+      <div class="kk kv-e">TWRP package</div><div class="vv G kv-e">me.twrp.twrpapp-26.apk verified</div>
+    </div>
+    <div style="margin-top:14px">
+      <button class="btn bs bxs sh">Run Pre-Check</button>
+    </div>
+  </div></div></div>
+  <div id="jb1" class="hidden"><div class="g2"><div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">checkm8 · palera1n</div></div><div class="note ni2 xs mb8">checkm8 exploit: A7–A11 SoC only. A12 and later cannot be exploited via checkm8.</div><div class="kv mb8"><div class="kk">A11 checkm8</div><div class="vv G">Supported</div><div class="kk">A12+ checkm8</div><div class="vv R">Not exploitable</div><div class="kk kv-e">palera1n rootless</div><div class="vv G kv-e">A9–A11</div></div><button class="btn bs bxs sh">Enter DFU Mode</button></div><div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">DFU Entry Reference</div></div><div class="kv"><div class="kk">iPhone 8 · X and later</div><div class="vv xs">Vol↑ → Vol↓ → hold Side 10 s → release Side + hold Vol↓ 5 s</div><div class="kk">iPhone 7 · 7 Plus</div><div class="vv xs">Hold Vol↓ + Wake 10 s → release Wake + hold Vol↓ 5 s</div><div class="kk kv-e">iPhone 6s and earlier</div><div class="vv xs kv-e">Hold Home + Wake 10 s → release Wake + hold Home 5 s</div></div></div></div></div>
+  <div id="jb2" class="hidden"><div class="g2"><div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Magisk Operations</div></div>
+    <button class="btn bs w100 mb6 sh">Install Magisk to Device</button>
+    <button class="btn bs w100 mb6 sh">Uninstall · Restore Stock Boot</button>
+    <button class="btn bs w100 mb6 sh">Patch Custom boot.img</button>
+    <button class="btn bs w100 mb6 sh">Install Bundled TWRP App APK</button>
+    <button class="btn bs w100 sh">Query Magisk Install Status</button>
+  </div><div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Magisk ↔ TWRP Integration</div></div>
+    <div class="kv mb8">
+      <div class="kk">Bundled TWRP</div><div class="vv G" style="font-size:10px;line-height:1.6">me.twrp.twrpapp-26.apk</div>
+      <div class="kk">SHA-256</div><div class="vv mo xs" style="word-break:break-all;line-height:1.65">80d2d8aa6f325019…aa361f2b</div>
+      <div class="kk kv-e">Recovery image</div><div class="vv xs kv-e" style="line-height:1.6">Supply device-specific recovery.img separately</div>
+    </div>
+    <button class="btn bs w100 mb6 sh">Verify TWRP Package Hashes</button>
+    <button class="btn bs w100 sh">Queue Recovery Companion Flow</button>
+  </div></div></div>
+  <div id="jb3" class="hidden"><div class="g2"><div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">TWRP Companion Package</div></div>
+    <div class="note nk xs mb8">Included from uploaded TWRP.zip: me.twrp.twrpapp-26.apk, .md5, .sha256 and signature sidecar.</div>
+    <div class="kv mb8">
+      <div class="kk">APK file</div><div class="vv mo xs" style="word-break:break-all;line-height:1.65">./TWRP/me.twrp.twrpapp-26.apk</div>
+      <div class="kk">MD5</div><div class="vv mo xs" style="word-break:break-all;line-height:1.65">d459d75188852a0a41290c85b3849d2a</div>
+      <div class="kk kv-e">SHA-256</div><div class="vv mo xs kv-e" style="word-break:break-all;line-height:1.65">80d2d8aa6f325019fb57427aecb06e044c9d8e070751ac09e85b3642aa361f2b</div>
+    </div>
+    <button class="btn bs w100 mb6 sh">Install TWRP App APK to Device</button>
+    <button class="btn bs w100 mb6 sh">Verify Bundle Integrity</button>
+    <button class="btn bs w100 sh">Open TWRP Recovery Workflow</button>
+  </div><div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Recovery Workflow</div></div>
+    <div class="fr"><label class="fl">Recovery Image Path</label><div class="fx g6"><input class="fi mo f1" placeholder="Provide device-specific recovery.img"><button class="btn bs bxs sh">Browse</button></div></div>
+    <div class="fr"><label class="fl">Boot / Flash Method</label><select class="fse"><option>Fastboot boot recovery.img</option><option>Fastboot flash recovery</option><option>ADB sideload / manual install</option><option>Already installed on device</option></select></div>
+    <div class="note nw xs mb8">The uploaded bundle does not include a recovery image — supply device-specific TWRP media separately.</div>
+    <div class="fx g8"><button class="btn bp f1 sh sh-a">Reboot to Recovery</button><button class="btn bs f1 sh">Launch Recovery Assistant</button></div>
+  </div></div></div>
+  <div id="jb4" class="hidden"><div class="g2"><div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">FRP · Google Lock Bypass</div></div><div class="fr"><label class="fl">Target Platform</label><select class="fse"><option>Auto-detect from device</option><option>Samsung</option><option>Xiaomi</option><option>Motorola</option><option>LG</option><option>OPPO · OnePlus</option><option>Nothing Phone</option></select></div><button class="btn bp sh sh-a">Check FRP State</button></div><div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Current Status</div></div><div class="kv"><div class="kk kv-e">FRP lock state</div><div class="vv A kv-e">No device connected</div></div></div></div></div>
+</div>
+
+<!-- ░░ SSH / VPN ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="page" id="pg-ssh">
+  <div class="ph"><div><div class="ph-idx">03 · DEVICE</div><div class="pt">SSH · VPN</div><div class="ps">Remote device access · port forwarding · VPN tunnel configuration</div></div></div>
+  <div class="ts"><div class="tab sh on" onclick="stab(this,'sv',0)">SSH Session</div><div class="tab sh" onclick="stab(this,'sv',1)">Port Forward</div><div class="tab sh" onclick="stab(this,'sv',2)">VPN</div></div>
+  <div id="sv0"><div class="card-ha sh" style="max-width:450px"><div class="sh mb8"><div class="sb2"></div><div class="sl">SSH Connection</div></div><div class="fr"><label class="fl">Host or IP Address</label><input class="fi" placeholder="192.168.0.1 or hostname"></div><div class="fx g8 mb8" style="align-items:flex-end"><div class="fr" style="margin:0;width:68px"><label class="fl">Port</label><input class="fi" value="22"></div><div class="fr f1" style="margin:0"><label class="fl">Username</label><input class="fi" placeholder="root"></div></div><div class="fr"><label class="fl">Authentication Method</label><select class="fse"><option>Password</option><option>Private Key File</option><option>Public Key + Passphrase</option></select></div><button class="btn bp sh sh-a">Establish Connection</button></div></div>
+  <div id="sv1" class="hidden"><div class="empty"><div class="e-ico">⇄</div><div class="e-t">No Active Tunnels</div><div class="e-s">Configure SSH port-forwarding rules to expose device services on your local network.</div></div></div>
+  <div id="sv2" class="hidden"><div class="empty"><div class="e-ico">◈</div><div class="e-t">VPN Not Configured</div><div class="e-s">Set up a VPN tunnel for secure remote device access across networks.</div></div></div>
+</div>
+
+<!-- ░░ ACTIVATION ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="page" id="pg-act">
+  <div class="ph"><div><div class="ph-idx">04 · DEVICE</div><div class="pt">Activation</div><div class="ps">iCloud activation lock check · bypass methods · MDM enrollment status</div></div></div>
+  <div class="note ne xs mb10">Use only on devices you own outright or hold explicit written service authorisation for. Unauthorised bypass is a criminal offence.</div>
+  <div class="ts"><div class="tab sh on" onclick="stab(this,'ac',0)">Status Check</div><div class="tab sh" onclick="stab(this,'ac',1)">Bypass</div><div class="tab sh" onclick="stab(this,'ac',2)">Escrow Key</div><div class="tab sh" onclick="stab(this,'ac',3)">MDM</div></div>
+  <div id="ac0"><div class="card-ha sh" style="max-width:430px"><div class="sh mb8"><div class="sb2"></div><div class="sl">iCloud Activation Lock Check</div></div><div class="fr"><label class="fl">Device IMEI or Serial Number</label><input class="fi mo" placeholder="15-digit IMEI or device serial"></div><div class="fx g8"><button class="btn bp sh sh-a">Check via Apple</button><button class="btn bs sh">Read from Device</button></div></div></div>
+  <div id="ac1" class="hidden"><div class="card-ha sh" style="max-width:430px"><div class="sh mb8"><div class="sb2"></div><div class="sl">Bypass Method</div></div><div class="fr"><label class="fl">Bypass Technique</label><select class="fse"><option>checkm8 exploit (A7–A11)</option><option>DNS server redirect (community)</option><option>Erase and restore via DFU</option><option>MDM DEP enrollment</option><option>SIM network trick</option></select></div><div class="note ni2 xs mb8">Community DNS: 78.100.17.6 · dns.bypass.community · activation-bypass.app</div><button class="btn bp sh sh-a">Execute Bypass</button></div></div>
+  <div id="ac2" class="hidden"><div class="card-ha sh" style="max-width:430px"><div class="sh mb8"><div class="sb2"></div><div class="sl">Escrow Key Query</div></div><div class="fr"><label class="fl">Device ECID (Hexadecimal)</label><input class="fi mo" placeholder="0x…"></div><button class="btn bp sh sh-a">Query escrowproxy.icloud.com</button></div></div>
+  <div id="ac3" class="hidden"><div class="empty"><div class="e-ico">⊞</div><div class="e-t">No Device Connected</div><div class="e-s">Connect an Apple device to read MDM enrollment status and lockdownd carrier domain details.</div></div></div>
+</div>
+
+<!-- ░░ NETWORK ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="page" id="pg-nwk">
+  <div class="ph"><div><div class="ph-idx">05 · DEVICE</div><div class="pt">Network</div><div class="ps">SIM and carrier lock · MCC unlock gateway · lockdownd policy</div></div></div>
+  <div class="ts"><div class="tab sh on" onclick="stab(this,'nw',0)">SIM Status</div><div class="tab sh" onclick="stab(this,'nw',1)">MCC Unlock</div><div class="tab sh" onclick="stab(this,'nw',2)">Lock Policy</div></div>
+  <div id="nw0"><div class="card-ha sh" style="max-width:430px"><div class="sh mb8"><div class="sb2"></div><div class="sl">SIM Lock Status</div></div><div class="fr"><label class="fl">Device IMEI</label><input class="fi mo" placeholder="15-digit IMEI"></div><button class="btn bp sh sh-a">Check SIM Lock State</button></div></div>
+  <div id="nw1" class="hidden"><div class="card-ha sh" style="max-width:430px"><div class="sh mb8"><div class="sb2"></div><div class="sl">MCC Carrier Unlock</div></div><div class="fr"><label class="fl">Device IMEI</label><input class="fi mo" placeholder="15-digit IMEI"></div><button class="btn bp sh sh-a">Query mccgateway.icloud.com</button></div></div>
+  <div id="nw2" class="hidden"><div class="empty"><div class="e-ico">◰</div><div class="e-t">No Device Connected</div><div class="e-s">Connect a device to query SIM lock policy from the lockdownd carrier settings domain.</div></div></div>
+</div>
+
+<!-- ░░ TOOLS ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="page" id="pg-tls">
+  <div class="ph"><div><div class="ph-idx">06 · DEVICE</div><div class="pt">Platform Tools</div><div class="ps">Manufacturer-specific repair diagnostics and service operations</div></div></div>
+  <div class="ts"><div class="tab sh on" onclick="stab(this,'tl',0)">Diagnostics</div><div class="tab sh" onclick="stab(this,'tl',1)">Samsung</div><div class="tab sh" onclick="stab(this,'tl',2)">Xiaomi</div><div class="tab sh" onclick="stab(this,'tl',3)">Motorola</div><div class="tab sh" onclick="stab(this,'tl',4)">Sony</div><div class="tab sh" onclick="stab(this,'tl',5)">Nokia</div><div class="tab sh" onclick="stab(this,'tl',6)">OPPO</div></div>
+  <div id="tl0"><div class="g2"><div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">USB · ADB Diagnostics</div></div><button class="btn bs w100 mb6 sh">Enumerate USB Device Tree</button><button class="btn bs w100 mb6 sh">Test ADB Connectivity</button><button class="btn bs w100 sh">Verify libusb Linkage</button></div><div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">TCP Port Probe</div></div><div class="fx g6 mb8"><input class="fi f1" placeholder="Target host or IP"><input class="fi" placeholder="Port" style="width:60px"><button class="btn bp bxs sh sh-a">Probe</button></div><div class="xs tM">Local TCP probe via chimera-api::portcheck.</div></div></div></div>
+  <div id="tl1" class="hidden"><div class="g2"><div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Samsung Service Tools</div></div><button class="btn bs w100 mb6 sh">Read IMEI from Device</button><button class="btn bs w100 mb6 sh">Remove FRP Lock</button><button class="btn bs w100 mb6 sh">Change CSC Region</button><button class="btn bs w100 mb6 sh">Stage Bundled TWRP App APK</button><button class="btn bs w100 sh">Root · Unroot · TWRP Prep</button><div class="xs tM mt6">Bootloader unlock and any required recovery image remain device-specific.</div></div><div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Download Mode · Odin</div></div><div class="note nw xs mb8">Vol– + Bixby + Power → Download Mode.</div><button class="btn bs sh">Flash Firmware via Odin</button></div></div></div>
+  <div id="tl2" class="hidden"><div class="card-ha sh" style="max-width:360px"><div class="sh mb8"><div class="sb2"></div><div class="sl">Xiaomi · HyperOS</div></div><button class="btn bs w100 mb6 sh">Remove FRP Lock</button><button class="btn bs w100 mb6 sh">Unlock Mi Account</button><button class="btn bs w100 sh">Check Bootloader State</button></div></div>
+  <div id="tl3" class="hidden"><div class="card-ha sh" style="max-width:360px"><div class="sh mb8"><div class="sb2"></div><div class="sl">Motorola</div></div><button class="btn bs w100 mb6 sh">Remove FRP Lock</button><button class="btn bs w100 sh">Repair IMEI</button></div></div>
+  <div id="tl4" class="hidden"><div class="card-ha sh" style="max-width:360px"><div class="sh mb8"><div class="sb2"></div><div class="sl">Sony Xperia</div></div><button class="btn bs w100 mb6 sh">Backup TA Partition</button><button class="btn bs w100 sh">Restore TA Partition</button></div></div>
+  <div id="tl5" class="hidden"><div class="card-ha sh" style="max-width:360px"><div class="sh mb8"><div class="sb2"></div><div class="sl">Nokia</div></div><button class="btn bs w100 sh">Remove FRP Lock</button></div></div>
+  <div id="tl6" class="hidden"><div class="card-ha sh" style="max-width:360px"><div class="sh mb8"><div class="sb2"></div><div class="sl">OPPO · OnePlus · Nothing</div></div><button class="btn bs w100 mb6 sh">Remove FRP Lock</button><button class="btn bs w100 sh">Nothing Phone FRP Bypass</button></div></div>
+</div>
+
+<!-- ░░ APPLE ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="page" id="pg-ios">
+  <div class="ph"><div><div class="ph-idx">01 · PLATFORM</div><div class="pt">Apple iOS</div><div class="ps">iPhone and iPad — DFU · IPSW flash · iCloud · passcode · lockdown</div></div></div>
+  <div class="ts"><div class="tab sh on" onclick="stab(this,'io',0)">DFU · Recovery</div><div class="tab sh" onclick="stab(this,'io',1)">Flash IPSW</div><div class="tab sh" onclick="stab(this,'io',2)">iCloud</div><div class="tab sh" onclick="stab(this,'io',3)">Passcode</div><div class="tab sh" onclick="stab(this,'io',4)">Network Unlock</div><div class="tab sh" onclick="stab(this,'io',5)">Lockdown</div></div>
+  <div id="io0"><div class="g2"><div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Device Mode Entry</div></div><div class="fx g8 mb8"><button class="btn bp f1 sh sh-a">Enter DFU Mode</button><button class="btn bs f1 sh">Enter Recovery</button></div><div class="fx g8"><button class="btn bs f1 sh">Exit Recovery</button><button class="btn bs f1 sh">Normal Boot</button></div></div><div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">DFU Entry Reference</div></div><div class="kv"><div class="kk">iPhone 8 · X and later</div><div class="vv xs">Vol↑ → Vol↓ → hold Side 10 s → release Side + hold Vol↓ 5 s</div><div class="kk">iPhone 7 · 7 Plus</div><div class="vv xs">Hold Vol↓ + Wake 10 s → release Wake + hold Vol↓ 5 s</div><div class="kk kv-e">iPhone 6s and earlier</div><div class="vv xs kv-e">Hold Home + Wake 10 s → release Wake + hold Home 5 s</div></div></div></div></div>
+  <div id="io1" class="hidden"><div class="card-ha sh" style="max-width:470px"><div class="sh mb8"><div class="sb2"></div><div class="sl">Flash IPSW Firmware</div></div><div class="fr"><label class="fl">IPSW File</label><div class="fx g6"><input class="fi mo f1" placeholder="~/Downloads/iPhone_*.ipsw"><button class="btn bs bxs sh">Browse</button></div></div><div class="fr"><label class="fl">SHSH2 Blob (optional — for downgrade)</label><div class="fx g6"><input class="fi mo f1" placeholder="*.shsh2 blob file"><button class="btn bs bxs sh">Browse</button></div></div><div class="tr"><div><div class="tl">Verify IPSW SHA-1 before flashing</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div><div class="tr"><div><div class="tl">Erase device during restore</div></div><div class="tog" onclick="this.classList.toggle('on')"></div></div><button class="btn bp mt8 sh sh-a">Begin Flash Sequence</button></div></div>
+  <div id="io2" class="hidden"><div class="g2"><div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Activation Status</div></div><button class="btn bs mb6 w100 sh">Query lockdownd Service</button><button class="btn bs mb9 w100 sh">Check Online via Apple</button><div class="kv"><div class="kk kv-e">ActivationState</div><div class="vv A kv-e">No device</div></div></div><div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Bypass</div></div><div class="fr"><label class="fl">Technique</label><select class="fse"><option>checkm8 (A7–A11)</option><option>DNS redirect</option><option>Erase and restore</option><option>MDM DEP</option></select></div><button class="btn bp sh sh-a">Execute Bypass</button></div></div></div>
+  <div id="io3" class="hidden"><div class="card-ha sh" style="max-width:430px"><div class="sh mb8"><div class="sb2"></div><div class="sl">Passcode Removal</div></div><div class="note nw xs mb8">checkm8 requires A11 SoC or earlier. Erase method supports all models.</div><div class="fr"><label class="fl">Removal Method</label><select class="fse"><option>checkm8 bypass exploit (A7–A11)</option><option>Erase device and restore (all models)</option></select></div><div class="kv mb8"><div class="kk">Remaining attempts</div><div class="vv A">No device</div><div class="kk kv-e">Failed attempts</div><div class="vv tM kv-e">—</div></div><button class="btn bd sh">Remove Passcode</button></div></div>
+  <div id="io4" class="hidden"><div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">iPhone · AU Network Unlock Reference</div></div><table class="tbl"><thead><tr><th>Device Series</th><th>Identifiers</th><th>SoC</th><th>checkm8</th><th>Free Unlock</th></tr></thead><tbody><tr><td>iPhone 17 Air · 17 · Pro · Pro Max</td><td class="mo">iPhone18,1–5</td><td class="mo xs">A19 · A19 Pro</td><td><span class="chip cR">No</span></td><td><span class="chip cG">Yes</span></td></tr><tr><td>iPhone 16 · 16e series</td><td class="mo">iPhone17,1–5</td><td class="mo xs">A18 · A16</td><td><span class="chip cR">No</span></td><td><span class="chip cG">Yes</span></td></tr><tr><td>iPhone 15 series</td><td class="mo">iPhone15,4–16,2</td><td class="mo xs">A16 · A17 Pro</td><td><span class="chip cR">No</span></td><td><span class="chip cG">Yes</span></td></tr><tr><td>iPhone 14 series</td><td class="mo">iPhone14,7–15,3</td><td class="mo xs">A15 · A16</td><td><span class="chip cR">No</span></td><td><span class="chip cG">Yes</span></td></tr><tr><td>iPhone 13 series</td><td class="mo">iPhone14,2–6</td><td class="mo xs">A15 Bionic</td><td><span class="chip cR">No</span></td><td><span class="chip cG">Yes</span></td></tr><tr><td>iPhone X through 11 Pro Max</td><td class="mo">iPhone10,3–12,5</td><td class="mo xs">A11–A13</td><td><span class="chip cA">A11 only</span></td><td><span class="chip cG">Yes</span></td></tr></tbody></table></div></div>
+  <div id="io5" class="hidden"><div class="g2"><div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">lockdownd Values</div></div><div class="kv"><div class="kk">ProductType</div><div class="vv A">No device</div><div class="kk">ProductVersion</div><div class="vv tM">—</div><div class="kk">IMEI</div><div class="vv tM mo">—</div><div class="kk kv-e">SerialNumber</div><div class="vv tM mo kv-e">—</div></div></div><div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Pair Record</div></div><div class="note ni2 xs">Pair records read from <span class="mo" style="font-size:8.5px">~/Library/Lockdown/&lt;UDID&gt;.plist</span> on macOS. Falls back to <span class="mo">None</span> if absent or expired.</div></div></div></div>
+</div>
+
+<!-- ░░ AU UNLOCK ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="page" id="pg-au">
+  <div class="ph"><div><div class="ph-idx">02 · PLATFORM</div><div class="pt">AU Network Unlock</div><div class="ps">Australian carrier network unlock · MCC 505 operators</div></div></div>
+  <div class="ts"><div class="tab sh on" onclick="stab(this,'au',0)">Carriers</div><div class="tab sh" onclick="stab(this,'au',1)">Unlock Wizard</div><div class="tab sh" onclick="stab(this,'au',2)">IMEI Validate</div></div>
+  <div id="au0">
+    <div class="crow sh"><div><div class="crn">Telstra</div><div class="crm">MCC 505/01 · telstra.com.au/support</div></div><div class="fx ac g8"><span class="chip cG">Free</span><button class="btn bs bxs sh">Open Portal</button></div></div>
+    <div class="crow sh"><div><div class="crn">Optus</div><div class="crm">MCC 505/02 · optus.com.au/support</div></div><div class="fx ac g8"><span class="chip cG">Free</span><button class="btn bs bxs sh">Open Portal</button></div></div>
+    <div class="crow sh"><div><div class="crn">Vodafone AU</div><div class="crm">MCC 505/03 · vodafone.com.au</div></div><div class="fx ac g8"><span class="chip cG">Free</span><button class="btn bs bxs sh">Open Portal</button></div></div>
+    <div class="crow sh"><div><div class="crn">TPG Telecom</div><div class="crm">MCC 505/90 · tpg.com.au</div></div><div class="fx ac g8"><span class="chip cG">Free</span><button class="btn bs bxs sh">Open Portal</button></div></div>
+    <div class="crow sh"><div><div class="crn">Boost Mobile <span class="xs tM">(Telstra MVNO)</span></div><div class="crm">MCC 505/19 · boost.com.au</div></div><div class="fx ac g8"><span class="chip cG">Free</span><button class="btn bs bxs sh">Open Portal</button></div></div>
+    <div class="crow sh"><div><div class="crn">Woolworths Mobile <span class="xs tM">(Optus MVNO)</span></div><div class="crm">MCC 505/05 · woolworths.com.au/mobile</div></div><div class="fx ac g8"><span class="chip cG">Free</span><button class="btn bs bxs sh">Open Portal</button></div></div>
+  </div>
+  <div id="au1" class="hidden"><div class="card-ha sh" style="max-width:450px"><div class="sh mb8"><div class="sb2"></div><div class="sl">Guided Unlock Wizard</div></div><div class="fr"><label class="fl">Device IMEI</label><input class="fi mo" placeholder="15-digit IMEI" id="wImei"></div><div class="fr"><label class="fl">Locked Carrier</label><select class="fse" id="wCarr"><option value="Telstra">Telstra (MCC 505/01)</option><option value="Optus">Optus (MCC 505/02)</option><option value="Vodafone AU">Vodafone AU (MCC 505/03)</option><option value="TPG">TPG Telecom (MCC 505/90)</option><option value="Boost">Boost Mobile (MCC 505/19)</option><option value="Woolworths Mobile">Woolworths Mobile (MCC 505/05)</option></select></div><button class="btn bp sh sh-a" onclick="runWiz()">Run Unlock Wizard</button><div id="wRes" class="mt8"></div></div></div>
+  <div id="au2" class="hidden"><div class="card-ha sh" style="max-width:330px"><div class="sh mb8"><div class="sb2"></div><div class="sl">IMEI Validation · Luhn</div></div><div class="fr"><label class="fl">IMEI Number</label><input class="fi mo" placeholder="15-digit IMEI" id="vImei"></div><button class="btn bp bxs sh sh-a" onclick="valImei()">Validate IMEI</button><div id="vRes" class="mt8"></div></div></div>
+</div>
+
+<!-- ░░ SHSH ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="page" id="pg-shsh">
+  <div class="ph"><div><div class="ph-idx">03 · PLATFORM</div><div class="pt">SHSH Blob Manager</div><div class="ps">APTicket · SHSH2 save and verify · futurerestore command builder</div></div></div>
+  <div class="ts"><div class="tab sh on" onclick="stab(this,'sh',0)">Save Blobs</div><div class="tab sh" onclick="stab(this,'sh',1)">Local Blobs</div><div class="tab sh" onclick="stab(this,'sh',2)">Downgrade Report</div><div class="tab sh" onclick="stab(this,'sh',3)">FutureRestore</div><div class="tab sh" onclick="stab(this,'sh',4)">Error Catalogue</div></div>
+  <div id="sh0"><div class="g2"><div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Request from Apple TSS</div></div><div class="fr"><label class="fl">Device ECID (Hexadecimal)</label><input class="fi mo" placeholder="0x… ECID from lockdownd"></div><div class="fr"><label class="fl">Board Configuration</label><input class="fi mo" placeholder="e.g. d22ap · d63ap · d421ap"></div><div class="fr"><label class="fl">Target Build Identifier</label><input class="fi mo" placeholder="e.g. 21A329 · 22E772610a"></div><button class="btn bp bxs sh sh-a">Request via gsa.apple.com</button></div><div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Bulk Save from shsh.host</div></div><div class="fr"><label class="fl">Device ECID</label><input class="fi mo" placeholder="ECID (hexadecimal)"></div><div class="fr"><label class="fl">Device Model Identifier</label><input class="fi" placeholder="e.g. iPhone14,2 · iPhone16,1"></div><button class="btn bs bxs sh">Fetch All from shsh.host</button></div></div></div>
+  <div id="sh1" class="hidden"><div class="empty"><div class="e-ico">◰</div><div class="e-t">No Saved Blobs</div><div class="e-s">SHSH2 blobs will appear here once saved. Store: <span class="mo" style="font-size:8.5px">~/Library/Application Support/ChimeraRS/blobs/</span></div></div></div>
+  <div id="sh2" class="hidden"><div class="card-ha sh" style="max-width:430px"><div class="sh mb8"><div class="sb2"></div><div class="sl">Downgrade Compatibility Report</div></div><div class="note nw xs mb8">SEP and Cryptex1 constraints must be satisfied before any downgrade attempt.</div><div class="fr"><label class="fl">Target iOS Version</label><input class="fi" placeholder="e.g. 16.7.10 · 17.6.1"></div><div class="fr"><label class="fl">Device ECID</label><input class="fi mo" placeholder="0x…"></div><button class="btn bp bxs sh sh-a">Generate Compatibility Report</button></div></div>
+  <div id="sh3" class="hidden"><div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">futurerestore Command Builder</div></div><div class="g2 mb9"><div><div class="fr"><label class="fl">IPSW File</label><input class="fi mo" placeholder="*.ipsw"></div><div class="fr"><label class="fl">SHSH2 Blob</label><input class="fi mo" placeholder="*.shsh2"></div><div class="fr"><label class="fl">APNonce Generator</label><select class="fse"><option>None</option><option>misaka</option><option>SuccessionRestore</option><option>palera1n</option></select></div></div><div><div class="tr"><div><div class="tl">Use latest SEP firmware</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div><div class="tr"><div><div class="tl">Use latest baseband firmware</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div><div class="tr"><div><div class="tl">Erase device during restore</div></div><div class="tog" onclick="this.classList.toggle('on')"></div></div></div></div><button class="btn bp bxs mb8 sh sh-a">Build Command String</button><div class="code">futurerestore --latest-sep --latest-baseband -t *.shsh2 *.ipsw</div></div></div>
+  <div id="sh4" class="hidden"><div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Common SHSH · TSS Error Reference</div></div><table class="tbl"><thead><tr><th>Error</th><th>Root Cause</th><th>Recommended Action</th></tr></thead><tbody><tr><td class="mo">TSS: -1</td><td class="xs">Firmware build not signed by Apple</td><td class="xs">Request a build within the active signing window</td></tr><tr><td class="mo">ECID mismatch</td><td class="xs">Blob does not match the device ECID</td><td class="xs">Verify ECID against lockdownd UniqueChipID</td></tr><tr><td class="mo">Nonce not set</td><td class="xs">APNonce not configured on device</td><td class="xs">Set generator nonce via misaka or palera1n</td></tr><tr><td class="mo">SEP incompatible</td><td class="xs">Target SEP older than installed firmware</td><td class="xs">Add --use-latest-sep to futurerestore</td></tr><tr><td class="mo">Baseband error</td><td class="xs">Baseband version mismatch</td><td class="xs">Add --use-latest-baseband</td></tr><tr><td class="mo">Network timeout</td><td class="xs">TSS server unreachable</td><td class="xs">Verify gsa.apple.com reachable; check proxy</td></tr><tr><td class="mo">Cryptex1 error</td><td class="xs">A15+ Cryptex1 downgrade constraint</td><td class="xs">Downgrade not possible for this target</td></tr><tr><td class="mo">Blob expired</td><td class="xs">Build no longer signed by Apple</td><td class="xs">Save a new blob while build remains signed</td></tr></tbody></table></div></div>
+</div>
+
+<!-- ░░ API TOOLS ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="page" id="pg-api">
+  <div class="ph">
+    <div><div class="ph-idx">04 · PLATFORM</div><div class="pt">API Tools</div><div class="ps">Endpoint explorer · iCloud infrastructure map · TCP port probing</div></div>
+    <div class="pa"><span class="xs tM">Mock</span><div class="tog sh-a" id="mockTog" style="margin:0 5px" onclick="this.classList.toggle('on');addLog('I','API mock: '+(this.classList.contains('on')?'enabled':'disabled'))"></div><span class="xs tM">Live</span></div>
+  </div>
+  <div class="ts"><div class="tab sh on" onclick="stab(this,'ap',0)">Endpoints</div><div class="tab sh" onclick="stab(this,'ap',1)">iCloud Map</div><div class="tab sh" onclick="stab(this,'ap',2)">Port Check</div></div>
+  <div id="ap0"><div class="cflat sh"><div class="ctit">ChimeraTool Subdomain · Local Module Map</div><table class="tbl"><thead><tr><th>Subdomain</th><th>Service Role</th><th>ChimeraRS Module</th><th>Status</th></tr></thead><tbody><tr><td class="mo">api.chimeratool.com</td><td class="xs">Primary REST API gateway</td><td class="xs">chimera-api::client</td><td><span class="chip cG">Ready</span></td></tr><tr><td class="mo">secure.chimeratool.com</td><td class="xs">IMEI · SHSH · certificates</td><td class="xs">chimera-api::secure_api</td><td><span class="chip cG">Ready</span></td></tr><tr><td class="mo">data.chimeratool.com</td><td class="xs">Firmware + device database</td><td class="xs">chimera-firmware + chimera-devices</td><td><span class="chip cG">Ready</span></td></tr><tr><td class="mo">upload.chimeratool.com</td><td class="xs">Log and firmware upload</td><td class="xs">chimera-api::upload_api</td><td><span class="chip cG">Ready</span></td></tr><tr><td class="mo">pics.chimeratool.com</td><td class="xs">Device image thumbnails</td><td class="xs">chimera-api::pics_api</td><td><span class="chip cG">Ready</span></td></tr><tr><td class="mo">portcheck.chimeratool.com</td><td class="xs">TCP reachability probe</td><td class="xs">chimera-api::portcheck</td><td><span class="chip cG">Ready</span></td></tr><tr><td class="mo">stage.chimeratool.com</td><td class="xs">Staging · beta environment</td><td class="xs">mock_server (localhost)</td><td><span class="chip cA">Mock</span></td></tr><tr><td class="mo">administration.chimeratool.com</td><td class="xs">Administrative panel</td><td class="xs">GUI Settings (local)</td><td><span class="chip cB">Local</span></td></tr><tr><td class="mo">bb.chimeratool.com</td><td class="xs">Backend message bus</td><td class="xs">crossbeam-channel worker</td><td><span class="chip cG">Ready</span></td></tr><tr><td class="mo">munin.chimeratool.com</td><td class="xs">System monitoring</td><td class="xs">GUI Diagnostics tab</td><td><span class="chip cB">Local</span></td></tr></tbody></table></div></div>
+  <div id="ap1" class="hidden"><div class="cflat sh"><div class="ctit">iCloud Infrastructure Map · 198 Endpoints · 27 Probe-Confirmed · 2026-03-13</div><div class="note ni2 xs mb9">Apple IPv4: 17.110/16 · 17.111/16 · 17.143/16 · 17.172/16 · 17.177/16 · 17.178/16 · 17.248/16 · 17.56.136/24 · 23.11.166/24 · IPv6: 2403:300:a50:180::/64 · 2600:1415:6c00::/48</div><table class="tbl"><thead><tr><th>FQDN</th><th>IPv4</th><th>Role</th><th>Probe</th></tr></thead><tbody><tr><td class="mo xs">background.gateway.icloud.com</td><td class="mo xs">17.248.219.23/66/39/8</td><td class="xs">Primary gateway</td><td><span class="chip cG">✓ 301</span></td></tr><tr><td class="mo xs">ckhttpapi.icloud.com</td><td class="mo xs">17.248.219.15/23/66/8</td><td class="xs">CloudKit HTTP API</td><td><span class="chip cG">✓ 301</span></td></tr><tr><td class="mo xs">beta.icloud.com</td><td class="mo xs">23.11.166.5</td><td class="xs">Beta access</td><td><span class="chip cG">✓ 301</span></td></tr><tr><td class="mo xs">imap.mail.icloud.com</td><td class="mo xs">17.56.136.196</td><td class="xs">Mail IMAP</td><td><span class="chip cG">✓</span></td></tr><tr><td class="mo xs">mr-e3sh.icloud.com</td><td class="mo xs">17.178.103.11</td><td class="xs">TSS signing relay</td><td><span class="chip cG">✓</span></td></tr><tr><td class="mo xs">icloud4-hubble.icloud.com</td><td class="mo xs">17.177.80.31</td><td class="xs">Hubble monitoring</td><td><span class="chip cG">✓</span></td></tr><tr><td class="mo xs">antonws.icloud.com</td><td class="mo xs">17.143.188.8</td><td class="xs">Anton websocket</td><td><span class="chip cG">✓</span></td></tr><tr><td class="mo xs">escrowproxy.icloud.com</td><td class="mo xs">—</td><td class="xs">Escrow key proxy</td><td><span class="chip cM">—</span></td></tr><tr><td class="mo xs">mccgateway.icloud.com</td><td class="mo xs">—</td><td class="xs">Carrier activation</td><td><span class="chip cM">—</span></td></tr><tr><td class="mo xs">fmipmobile.icloud.com</td><td class="mo xs">—</td><td class="xs">Find My iPhone</td><td><span class="chip cM">—</span></td></tr><tr><td class="mo xs">gsa.apple.com</td><td class="mo xs">—</td><td class="xs">TSS firmware signing</td><td><span class="chip cM">—</span></td></tr></tbody></table></div></div>
+  <div id="ap2" class="hidden"><div class="card-ha sh" style="max-width:430px"><div class="sh mb8"><div class="sb2"></div><div class="sl">TCP Port Reachability Probe</div></div><div class="fx g6 mb9"><input class="fi f1" placeholder="Target hostname or IP"><input class="fi" placeholder="Port" style="width:60px"><button class="btn bp bxs sh sh-a">Probe</button></div><div class="xs tM">Local TCP connection via chimera-api::portcheck.</div></div></div>
+</div>
+
+<!-- ░░ SAMSUNG ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="page" id="pg-samsung">
+  <div class="ph"><div><div class="ph-idx">03 · SERVICE</div><div class="pt">Samsung Operations</div><div class="ps">FRP · MDM · Knox · EFS · CSC · IMEI · Backup</div></div></div>
+  <div class="ts"><div class="tab sh on" onclick="stab(this,'sm',0)">FRP / Lock</div><div class="tab sh" onclick="stab(this,'sm',1)">IMEI / Cert</div><div class="tab sh" onclick="stab(this,'sm',2)">Backup</div><div class="tab sh" onclick="stab(this,'sm',3)">Network</div><div class="tab sh" onclick="stab(this,'sm',4)">Service</div></div>
+
+  <div id="sm0"><div class="g2">
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Remove FRP Lock</div></div><div class="fr"><label class="fl">Device Serial</label><input class="fi mo" placeholder="ADB serial number"></div><button class="btn bp sh sh-a" onclick="chimera.samsungResetFrp(document.querySelector('#sm0 input').value)">Remove FRP</button><div class="note nw xs mt6">Requires ADB access. Device may reboot after operation.</div></div>
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Remove MDM</div></div><div class="fr"><label class="fl">Device Serial</label><input class="fi mo" placeholder="ADB serial number"></div><button class="btn bp sh sh-a" onclick="chimera.samsungRemoveMdm(document.querySelector('#sm0 .card-ha:nth-child(2) input').value)">Remove MDM</button><div class="note nw xs mt6">Disables Knox MDM policies and device admin.</div></div>
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Remove Knox Guard</div></div><div class="fr"><label class="fl">Device Serial</label><input class="fi mo" placeholder="ADB serial number"></div><button class="btn bp sh sh-a" onclick="chimera.samsungRemoveKnoxGuard(document.querySelector('#sm0 .card-ha:nth-child(3) input').value)">Remove Knox Guard</button></div>
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Reset Screen Lock</div></div><div class="fr"><label class="fl">Device Serial</label><input class="fi mo" placeholder="ADB serial number"></div><button class="btn bp sh sh-a" onclick="chimera.samsungResetScreenlock(document.querySelector('#sm0 .card-ha:nth-child(4) input').value)">Remove Lock</button></div>
+  </div></div>
+
+  <div id="sm1" class="hidden"><div class="g2">
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Repair IMEI</div></div><div class="fr"><label class="fl">Device Serial</label><input class="fi mo" placeholder="ADB serial number" id="sm-imei-serial"></div><div class="fr"><label class="fl">New IMEI</label><input class="fi mo" placeholder="15-digit IMEI" id="sm-imei-val"></div><button class="btn bp sh sh-a" onclick="chimera.repairImei(document.getElementById('sm-imei-serial').value,document.getElementById('sm-imei-val').value)">Repair IMEI</button></div>
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Repair MAC</div></div><div class="fr"><label class="fl">Device Serial</label><input class="fi mo" placeholder="ADB serial number" id="sm-mac-serial"></div><div class="fr"><label class="fl">New MAC</label><input class="fi mo" placeholder="AA:BB:CC:DD:EE:FF" id="sm-mac-val"></div><button class="btn bp sh sh-a" onclick="chimera.repairMac(document.getElementById('sm-mac-serial').value,document.getElementById('sm-mac-val').value)">Repair MAC</button></div>
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Read Codes</div></div><div class="fr"><label class="fl">Device Serial</label><input class="fi mo" placeholder="ADB serial number"></div><button class="btn bp sh sh-a" onclick="chimera.samsungReadCodes()">Read All Codes</button><div class="note ni2 xs mt6">Returns NCK, MCK, SPCK, CPCK codes.</div></div>
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Warranty Check</div></div><div class="fr"><label class="fl">Device Serial</label><input class="fi mo" placeholder="ADB serial number"></div><button class="btn bp sh sh-a" onclick="chimera.warrantyCheck(this.closest('.card-ha').querySelector('input').value)">Check Warranty</button></div>
+  </div></div>
+
+  <div id="sm2" class="hidden"><div class="g2">
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Store Backup</div></div><div class="fr"><label class="fl">Device Serial</label><input class="fi mo" placeholder="ADB serial number" id="sm-backup-serial"></div><div class="fr"><label class="fl">Output Path</label><input class="fi mo" placeholder="/path/to/backup.bin" id="sm-backup-path"></div><button class="btn bp sh sh-a" onclick="chimera.samsungStoreBackup(document.getElementById('sm-backup-serial').value,document.getElementById('sm-backup-path').value)">Backup EFS</button></div>
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Restore Backup</div></div><div class="fr"><label class="fl">Device Serial</label><input class="fi mo" placeholder="ADB serial number" id="sm-restore-serial"></div><div class="fr"><label class="fl">Backup Path</label><input class="fi mo" placeholder="/path/to/backup.bin" id="sm-restore-path"></div><button class="btn bp sh sh-a" onclick="chimera.samsungRestoreBackup(document.getElementById('sm-restore-serial').value,document.getElementById('sm-restore-path').value)">Restore EFS</button></div>
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Repair EFS</div></div><div class="fr"><label class="fl">Device Serial</label><input class="fi mo" placeholder="ADB serial number"></div><button class="btn bp sh sh-a" onclick="chimera.samsungRepairEfs(this.closest('.card-ha').querySelector('input').value)">Repair EFS</button></div>
+  </div></div>
+
+  <div id="sm3" class="hidden"><div class="g2">
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Network Factory Reset</div></div><div class="fr"><label class="fl">Device Serial</label><input class="fi mo" placeholder="ADB serial number"></div><button class="btn bp sh sh-a" onclick="chimera.samsungNetworkFactoryReset(this.closest('.card-ha').querySelector('input').value)">Reset Network</button><div class="note nw xs mt6">Resets all network configs to factory defaults.</div></div>
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">CSC Change</div></div><div class="fr"><label class="fl">Device Serial</label><input class="fi mo" placeholder="ADB serial number"></div><div class="fr"><label class="fl">New CSC Code</label><input class="fi mo" placeholder="e.g. XAA, OXM"></div><button class="btn bp sh sh-a" onclick="chimera.samsungCscChange({udid:this.closest('.card-ha').querySelectorAll('input')[0].value,new_code:this.closest('.card-ha').querySelectorAll('input')[1].value})">Apply CSC</button></div>
+  </div></div>
+
+  <div id="sm4" class="hidden"><div class="g2">
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Get Device Info</div></div><div class="fr"><label class="fl">Device Serial</label><input class="fi mo" placeholder="ADB serial number"></div><button class="btn bp sh sh-a" onclick="chimera.samsungGetInfo(this.closest('.card-ha').querySelector('input').value)">Get Info</button></div>
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Remove Lost Mode</div></div><div class="fr"><label class="fl">Device Serial</label><input class="fi mo" placeholder="ADB serial number"></div><button class="btn bp sh sh-a" onclick="chimera.samsungRemoveLostMode(this.closest('.card-ha').querySelector('input').value)">Remove Lost Mode</button></div>
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Remove Warnings</div></div><div class="fr"><label class="fl">Device Serial</label><input class="fi mo" placeholder="ADB serial number"></div><button class="btn bp sh sh-a" onclick="chimera.samsungRemoveWarnings(this.closest('.card-ha').querySelector('input').value)">Remove Warnings</button></div>
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Remove Demo Mode</div></div><div class="fr"><label class="fl">Device Serial</label><input class="fi mo" placeholder="ADB serial number"></div><button class="btn bp sh sh-a" onclick="chimera.samsungRemoveDemo(this.closest('.card-ha').querySelector('input').value)">Remove Demo</button></div>
+  </div></div>
+</div>
+
+<!-- ░░ XIAOMI ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="page" id="pg-xiaomi">
+  <div class="ph"><div><div class="ph-idx">04 · SERVICE</div><div class="pt">Xiaomi Operations</div><div class="ps">FRP · IMEI · Factory Reset · Backup</div></div></div>
+  <div class="g2">
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Remove FRP</div></div><div class="fr"><label class="fl">Device Serial</label><input class="fi mo" placeholder="ADB serial number"></div><button class="btn bp sh sh-a" onclick="chimera.xiaomiRemoveFrp(this.closest('.card-ha').querySelector('input').value)">Remove FRP</button></div>
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Get Device Info</div></div><div class="fr"><label class="fl">Device Serial</label><input class="fi mo" placeholder="ADB serial number"></div><button class="btn bp sh sh-a" onclick="chimera.xiaomiGetInfo(this.closest('.card-ha').querySelector('input').value)">Get Info</button></div>
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Factory Reset</div></div><div class="fr"><label class="fl">Device Serial</label><input class="fi mo" placeholder="ADB serial number"></div><button class="btn bd sh" onclick="chimera.xiaomiFactoryReset(this.closest('.card-ha').querySelector('input').value)">Factory Reset</button><div class="note ne xs mt6">Erases all user data.</div></div>
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Network Factory Reset</div></div><div class="fr"><label class="fl">Device Serial</label><input class="fi mo" placeholder="ADB serial number"></div><button class="btn bp sh sh-a" onclick="chimera.xiaomiNetworkFactoryReset(this.closest('.card-ha').querySelector('input').value)">Reset Network</button></div>
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Repair IMEI</div></div><div class="fr"><label class="fl">Device Serial</label><input class="fi mo" placeholder="ADB serial number" id="xi-imei-serial"></div><div class="fr"><label class="fl">New IMEI</label><input class="fi mo" placeholder="15-digit IMEI" id="xi-imei-val"></div><button class="btn bp sh sh-a" onclick="chimera.xiaomiRepairImei(document.getElementById('xi-imei-serial').value,document.getElementById('xi-imei-val').value)">Repair IMEI</button></div>
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Store Backup</div></div><div class="fr"><label class="fl">Device Serial</label><input class="fi mo" placeholder="ADB serial number" id="xi-backup-serial"></div><div class="fr"><label class="fl">Output Path</label><input class="fi mo" placeholder="/path/to/backup.bin" id="xi-backup-path"></div><button class="btn bp sh sh-a" onclick="chimera.xiaomiStoreBackup(document.getElementById('xi-backup-serial').value,document.getElementById('xi-backup-path').value)">Backup</button></div>
+  </div>
+</div>
+
+<!-- ░░ HUAWEI ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="page" id="pg-huawei">
+  <div class="ph"><div><div class="ph-idx">05 · SERVICE</div><div class="pt">Huawei Operations</div><div class="ps">FRP · Huawei ID · IMEI · Backup</div></div></div>
+  <div class="g2">
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Remove FRP</div></div><div class="fr"><label class="fl">Device Serial</label><input class="fi mo" placeholder="ADB serial number"></div><button class="btn bp sh sh-a" onclick="chimera.huaweiRemoveFrp(this.closest('.card-ha').querySelector('input').value)">Remove FRP</button></div>
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Disable Huawei ID</div></div><div class="fr"><label class="fl">Device Serial</label><input class="fi mo" placeholder="ADB serial number"></div><button class="btn bp sh sh-a" onclick="chimera.huaweiDisableId(this.closest('.card-ha').querySelector('input').value)">Disable Huawei ID</button></div>
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Get Device Info</div></div><div class="fr"><label class="fl">Device Serial</label><input class="fi mo" placeholder="ADB serial number"></div><button class="btn bp sh sh-a" onclick="chimera.huaweiGetInfo(this.closest('.card-ha').querySelector('input').value)">Get Info</button></div>
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Factory Reset</div></div><div class="fr"><label class="fl">Device Serial</label><input class="fi mo" placeholder="ADB serial number"></div><button class="btn bd sh" onclick="chimera.huaweiFactoryReset(this.closest('.card-ha').querySelector('input').value)">Factory Reset</button></div>
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Repair IMEI</div></div><div class="fr"><label class="fl">Device Serial</label><input class="fi mo" placeholder="ADB serial number" id="hw-imei-serial"></div><div class="fr"><label class="fl">New IMEI</label><input class="fi mo" placeholder="15-digit IMEI" id="hw-imei-val"></div><button class="btn bp sh sh-a" onclick="chimera.huaweiRepairImei(document.getElementById('hw-imei-serial').value,document.getElementById('hw-imei-val').value)">Repair IMEI</button></div>
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Store Backup</div></div><div class="fr"><label class="fl">Device Serial</label><input class="fi mo" placeholder="ADB serial number" id="hw-backup-serial"></div><div class="fr"><label class="fl">Output Path</label><input class="fi mo" placeholder="/path/to/backup.bin" id="hw-backup-path"></div><button class="btn bp sh sh-a" onclick="chimera.huaweiStoreBackup(document.getElementById('hw-backup-serial').value,document.getElementById('hw-backup-path').value)">Backup</button></div>
+  </div>
+</div>
+
+<!-- ░░ EDL MODE ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="page" id="pg-edl">
+  <div class="ph"><div><div class="ph-idx">06 · SERVICE</div><div class="pt">EDL Mode</div><div class="ps">Qualcomm Emergency Download · Sahara · Firehose</div></div></div>
+  <div class="note ni2 mb10">EDL mode requires the device to be in Qualcomm 9008 Download Mode. Hold Vol+ + Vol– during power-on, or use a hardware test-point.</div>
+  <div class="g2">
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Remove FRP (EDL)</div></div><div class="fr"><label class="fl">FRP Start Sector</label><input class="fi mo" placeholder="e.g. 0" id="edl-frp-sector"></div><div class="fr"><label class="fl">LUN</label><input class="fi mo" placeholder="e.g. 0" id="edl-frp-lun"></div><button class="btn bp sh sh-a" onclick="chimera.edlRemoveFrp(parseInt(document.getElementById('edl-frp-sector').value)||0,parseInt(document.getElementById('edl-frp-lun').value)||0)">Remove FRP</button></div>
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Update Firmware (EDL)</div></div><div class="fr"><label class="fl">Firmware Directory</label><input class="fi mo" placeholder="/path/to/firmware/" id="edl-fw-dir"></div><button class="btn bp sh sh-a" onclick="chimera.edlUpdateFirmware(document.getElementById('edl-fw-dir').value)">Flash Firmware</button><div class="note nw xs mt6">Directory should contain rawprogram0.xml and partition images.</div></div>
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Repair IMEI (EDL)</div></div><div class="fr"><label class="fl">New IMEI</label><input class="fi mo" placeholder="15-digit IMEI" id="edl-imei"></div><button class="btn bp sh sh-a" onclick="chimera.edlRepairImei(document.getElementById('edl-imei').value)">Repair IMEI</button></div>
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Store EFS Backup</div></div><div class="fr"><label class="fl">Output Path</label><input class="fi mo" placeholder="/path/to/efs_backup.bin" id="edl-backup-path"></div><button class="btn bp sh sh-a" onclick="chimera.edlStoreBackup(document.getElementById('edl-backup-path').value)">Backup EFS</button></div>
+  </div>
+</div>
+
+<!-- ░░ FASTBOOT ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="page" id="pg-fastboot">
+  <div class="ph"><div><div class="ph-idx">07 · SERVICE</div><div class="pt">Fastboot Operations</div><div class="ps">Bootloader · Flash · Erase · Reboot</div></div></div>
+  <div class="g2">
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Unlock Bootloader</div></div><button class="btn bp sh sh-a" onclick="chimera.fastbootUnlock()">Unlock</button><div class="note nw xs mt6">Requires OEM unlock enabled in developer options.</div></div>
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Lock Bootloader</div></div><button class="btn bs sh" onclick="chimera.fastbootLock()">Lock</button></div>
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Device Info</div></div><button class="btn bp sh sh-a" onclick="chimera.fastbootInfo()">Get Info</button></div>
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Flash Partition</div></div><div class="fr"><label class="fl">Partition</label><input class="fi mo" placeholder="e.g. boot, system" id="fb-part"></div><div class="fr"><label class="fl">Image Path</label><input class="fi mo" placeholder="/path/to/image.img" id="fb-img"></div><button class="btn bp sh sh-a" onclick="chimera.fastbootFlash(document.getElementById('fb-part').value,document.getElementById('fb-img').value)">Flash</button></div>
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Erase Partition</div></div><div class="fr"><label class="fl">Partition</label><input class="fi mo" placeholder="e.g. userdata" id="fb-erase-part"></div><button class="btn bd sh" onclick="chimera.fastbootErase(document.getElementById('fb-erase-part').value)">Erase</button><div class="note ne xs mt6">Destructive — erases all data on partition.</div></div>
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Reboot</div></div><div class="fr"><label class="fl">Mode</label><select class="fse" id="fb-reboot-mode"><option value="">Normal</option><option value="bootloader">Bootloader</option><option value="recovery">Recovery</option></select></div><button class="btn bp sh sh-a" onclick="chimera.fastbootReboot(document.getElementById('fb-reboot-mode').value)">Reboot</button></div>
+  </div>
+</div>
+
+<!-- ░░ REPAIR ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="page" id="pg-repair">
+  <div class="ph"><div><div class="ph-idx">08 · SERVICE</div><div class="pt">Repair Operations</div><div class="ps">IMEI · MAC · Screen Lock · Factory Reset · Bootloader</div></div></div>
+  <div class="g2">
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Repair IMEI (Generic)</div></div><div class="fr"><label class="fl">Device Serial</label><input class="fi mo" placeholder="ADB serial number" id="rp-imei-serial"></div><div class="fr"><label class="fl">IMEI 1</label><input class="fi mo" placeholder="15-digit IMEI" id="rp-imei1"></div><div class="fr"><label class="fl">IMEI 2 (optional)</label><input class="fi mo" placeholder="15-digit IMEI" id="rp-imei2"></div><button class="btn bp sh sh-a" onclick="chimera.repairImei(document.getElementById('rp-imei-serial').value,document.getElementById('rp-imei1').value,document.getElementById('rp-imei2').value||null)">Repair IMEI</button></div>
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Repair MAC</div></div><div class="fr"><label class="fl">Device Serial</label><input class="fi mo" placeholder="ADB serial number" id="rp-mac-serial"></div><div class="fr"><label class="fl">MAC Address</label><input class="fi mo" placeholder="AA:BB:CC:DD:EE:FF" id="rp-mac"></div><button class="btn bp sh sh-a" onclick="chimera.repairMac(document.getElementById('rp-mac-serial').value,document.getElementById('rp-mac').value)">Repair MAC</button></div>
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Remove Screen Lock</div></div><div class="fr"><label class="fl">Device Serial</label><input class="fi mo" placeholder="ADB serial number"></div><button class="btn bp sh sh-a" onclick="chimera.removeScreenLock(this.closest('.card-ha').querySelector('input').value)">Remove Lock</button></div>
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Factory Reset</div></div><div class="fr"><label class="fl">Device Serial</label><input class="fi mo" placeholder="ADB serial number"></div><button class="btn bd sh" onclick="chimera.factoryReset(this.closest('.card-ha').querySelector('input').value)">Factory Reset</button><div class="note ne xs mt6">Erases all user data.</div></div>
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Unlock Bootloader (Generic)</div></div><div class="fr"><label class="fl">Device Serial</label><input class="fi mo" placeholder="ADB serial number"></div><button class="btn bp sh sh-a" onclick="chimera.unlockBootloader(this.closest('.card-ha').querySelector('input').value)">Unlock</button></div>
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Relock Bootloader</div></div><div class="fr"><label class="fl">Device Serial</label><input class="fi mo" placeholder="ADB serial number"></div><button class="btn bs sh" onclick="chimera.relockBootloader(this.closest('.card-ha').querySelector('input').value)">Relock</button></div>
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Enable ADB</div></div><div class="fr"><label class="fl">Device Serial (optional)</label><input class="fi mo" placeholder="ADB serial number"></div><button class="btn bp sh sh-a" onclick="chimera.enableAdb(this.closest('.card-ha').querySelector('input').value||null)">Enable ADB</button></div>
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Reboot Device</div></div><div class="fr"><label class="fl">Mode</label><select class="fse" id="rp-reboot-mode"><option value="">Normal</option><option value="bootloader">Bootloader</option><option value="recovery">Recovery</option><option value="download">Download</option></select></div><button class="btn bp sh sh-a" onclick="chimera.rebootDevice(null,document.getElementById('rp-reboot-mode').value)">Reboot</button></div>
+  </div>
+</div>
+
+<!-- ░░ ZEBRA FLEET ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="page" id="pg-zebra">
+  <div class="ph"><div><div class="ph-idx">09 · FLEET</div><div class="pt">Zebra TC52/TC53</div><div class="ps">Enumerate · EMM · RxLogger · Partitions · Firmware</div></div></div>
+  <div class="ts"><div class="tab sh on" onclick="stab(this,'zb',0)">Enumerate</div><div class="tab sh" onclick="stab(this,'zb',1)">EMM Detect</div><div class="tab sh" onclick="stab(this,'zb',2)">RxLogger</div><div class="tab sh" onclick="stab(this,'zb',3)">Partitions</div><div class="tab sh" onclick="stab(this,'zb',4)">Firmware</div></div>
+  <div id="zb0"><div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Device Enumeration</div></div><div class="fr"><label class="fl">ADB Serial (optional)</label><input class="fi mo" placeholder="Auto-detect if empty"></div><button class="btn bp sh sh-a" onclick="chimera.zebraEnumerate(this.closest('.card-ha').querySelector('input').value||null)">Enumerate</button></div></div>
+  <div id="zb1" class="hidden"><div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">EMM Agent Detection</div></div><div class="fr"><label class="fl">ADB Serial</label><input class="fi mo" placeholder="Auto-detect if empty"></div><button class="btn bp sh sh-a" onclick="chimera.zebraDetectEmm(this.closest('.card-ha').querySelector('input').value||null)">Detect EMM</button></div></div>
+  <div id="zb2" class="hidden"><div class="g2">
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Start RxLogger</div></div><div class="fr"><label class="fl">ADB Serial</label><input class="fi mo" placeholder="Auto-detect"></div><button class="btn bp sh sh-a" onclick="chimera.zebraRxLoggerStart(this.closest('.card-ha').querySelector('input').value||null)">Start</button></div>
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Stop / Snapshot</div></div><div class="fr"><label class="fl">ADB Serial</label><input class="fi mo" placeholder="Auto-detect"></div><div class="fx g6"><button class="btn bs sh" onclick="chimera.zebraRxLoggerStop(this.closest('.card-ha').querySelector('input').value||null)">Stop</button><button class="btn bp sh sh-a" onclick="chimera.zebraRxLoggerSnapshot(this.closest('.card-ha').querySelector('input').value||null)">Snapshot</button></div></div>
+  </div></div>
+  <div id="zb3" class="hidden"><div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Partition Map</div></div><div class="fr"><label class="fl">ADB Serial</label><input class="fi mo" placeholder="Auto-detect"></div><button class="btn bp sh sh-a" onclick="chimera.zebraPartitionMap(this.closest('.card-ha').querySelector('input').value||null)">Read Map</button></div></div>
+  <div id="zb4" class="hidden"><div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Validate Firmware Package</div></div><div class="fr"><label class="fl">Package Path</label><input class="fi mo" placeholder="/path/to/zebra-os.zip"></div><button class="btn bp sh sh-a" onclick="chimera.zebraValidatePackage(this.closest('.card-ha').querySelector('input').value)">Validate</button></div></div>
+</div>
+
+<!-- ░░ PTT PRO ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="page" id="pg-pttpro">
+  <div class="ph"><div><div class="ph-idx">10 · FLEET</div><div class="pt">PTT Pro Provisioning</div><div class="ps">Users · Devices · Activation Codes · Bulk CSV</div></div></div>
+  <div class="ts"><div class="tab sh on" onclick="stab(this,'pt',0)">Users</div><div class="tab sh" onclick="stab(this,'pt',1)">Devices</div><div class="tab sh" onclick="stab(this,'pt',2)">Activation</div><div class="tab sh" onclick="stab(this,'pt',3)">Bulk</div></div>
+  <div id="pt0"><div class="g2">
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">List Users</div></div><div class="fr"><label class="fl">Base URL</label><input class="fi mo" placeholder="https://api.pttpro.com" id="pt-url"></div><div class="fr"><label class="fl">Tenant</label><input class="fi mo" placeholder="tenant-id" id="pt-tenant"></div><div class="fr"><label class="fl">Bearer Token</label><input class="fi mo" placeholder="Bearer token" id="pt-bearer"></div><button class="btn bp sh sh-a" onclick="chimera.pttproListUsers({base_url:document.getElementById('pt-url').value,tenant:document.getElementById('pt-tenant').value,bearer:document.getElementById('pt-bearer').value})">List Users</button></div>
+    <div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Create User</div></div><div class="fr"><label class="fl">Username</label><input class="fi mo" placeholder="username" id="pt-create-user"></div><div class="fr"><label class="fl">Display Name</label><input class="fi mo" placeholder="Display Name" id="pt-create-name"></div><button class="btn bp sh sh-a" onclick="chimera.pttproCreateUser({base_url:document.getElementById('pt-url').value,tenant:document.getElementById('pt-tenant').value,bearer:document.getElementById('pt-bearer').value,username:document.getElementById('pt-create-user').value,display_name:document.getElementById('pt-create-name').value})">Create User</button></div>
+  </div></div>
+  <div id="pt1" class="hidden"><div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Enroll Device</div></div><div class="fr"><label class="fl">Serial</label><input class="fi mo" placeholder="Device serial" id="pt-dev-serial"></div><div class="fr"><label class="fl">Model</label><input class="fi mo" placeholder="Device model" id="pt-dev-model"></div><button class="btn bp sh sh-a" onclick="chimera.pttproEnrollDevice({base_url:document.getElementById('pt-url').value,tenant:document.getElementById('pt-tenant').value,bearer:document.getElementById('pt-bearer').value,serial:document.getElementById('pt-dev-serial').value,model:document.getElementById('pt-dev-model').value})">Enroll Device</button></div></div>
+  <div id="pt2" class="hidden"><div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Generate Activation Code</div></div><div class="fr"><label class="fl">User ID</label><input class="fi mo" placeholder="UUID" id="pt-code-user"></div><div class="fr"><label class="fl">Serial</label><input class="fi mo" placeholder="Device serial" id="pt-code-serial"></div><button class="btn bp sh sh-a" onclick="chimera.pttproGenerateCode({base_url:document.getElementById('pt-url').value,tenant:document.getElementById('pt-tenant').value,bearer:document.getElementById('pt-bearer').value,user_id:document.getElementById('pt-code-user').value,serial:document.getElementById('pt-code-serial').value})">Generate Code</button></div></div>
+  <div id="pt3" class="hidden"><div class="card-ha sh"><div class="sh mb8"><div class="sb2"></div><div class="sl">Bulk CSV Provisioning</div></div><div class="fr"><label class="fl">CSV File Path</label><input class="fi mo" placeholder="/path/to/devices.csv" id="pt-csv-path"></div><div class="tr"><div><div class="tl">Reissue existing codes</div></div><div class="tog" onclick="this.classList.toggle('on')"></div></div><button class="btn bp sh sh-a" onclick="chimera.pttproBulkCsv({base_url:document.getElementById('pt-url').value,tenant:document.getElementById('pt-tenant').value,bearer:document.getElementById('pt-bearer').value,csv_path:document.getElementById('pt-csv-path').value})">Upload CSV</button></div></div>
+</div>
+
+<!-- ░░ EVENT LOG ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="page" id="pg-evlog">
+  <div class="ph"><div><div class="ph-idx">05 · PLATFORM</div><div class="pt">Event Log</div><div class="ps">Raw runtime telemetry · worker pool output · system events</div></div><div class="pa"><button class="btn bs bxs sh">Clear</button><button class="btn bs bxs sh">Export</button></div></div>
+  <div class="cflat sh" id="fulllog" style="overflow-y:auto;max-height:calc(100vh - 220px);padding:6px 0">
+    <div class="ll"><span class="lt">14:38:26.132</span><span class="lI"> INFO</span><span class="lm">chimera: Starting ChimeraRS v1.3.13 on macOS (x86_64-apple-darwin)</span></div>
+    <div class="ll"><span class="lt">14:38:26.134</span><span class="lW"> WARN</span><span class="lm">winit::x11::xdisplay: error setting XSETTINGS — Xft options won't reload automatically</span></div>
+    <div class="ll"><span class="lt">14:38:26.141</span><span class="lW"> WARN</span><span class="lm">winit::x11::randr: XRandR reported display 0mm in size — certifiably insane</span></div>
+    <div class="ll"><span class="lt">14:38:26.593</span><span class="lI"> INFO</span><span class="lm">winit::x11::window: Guessed window scale factor: 1</span></div>
+    <div class="ll"><span class="lt">14:38:26.615</span><span class="lI"> INFO</span><span class="lm">chimera::worker: GUI worker pool started — 22 crates · 148 files · 27,244 LOC</span></div>
+  </div>
+</div>
+
+</div><!-- /content -->
+
+<!-- ████ CONSOLE ████████████████████████████████████ -->
+<div id="con">
+  <div class="ch-hdr">
+    <div class="dot" style="color:var(--G)"></div>
+    <div class="ch-t">Console</div>
+    <div class="ch-m">chimera::worker · macOS x86_64</div>
+  </div>
+  <div class="ch-body" id="lb">
+    <div class="ll"><span class="lt">14:38:26</span><span class="lI"> INFO</span><span class="lm"> chimera: Starting ChimeraRS v1.3.13 on macOS (x86_64)</span></div>
+    <div class="ll"><span class="lt">14:38:26</span><span class="lI"> INFO</span><span class="lm"> chimera::worker: GUI worker pool started</span></div>
+    <div class="ll"><span class="lt">14:38:26</span><span class="lI"> INFO</span><span class="lm"> Shell ready — 22 crates · 148 files · 27,244 LOC</span></div>
+  </div>
+</div>
+</div><!-- /main -->
+</div><!-- /layout -->
+</div><!-- /root -->
+
+<!-- ████ SCAN OVERLAY ██████████████████████████████ -->
+<div id="scan-ov">
+  <div class="scan-wrap">
+    <div class="scan-box"><div class="scan-ring"></div><div class="scan-inner"></div></div>
+    <div class="scan-lbl">Scanning</div>
+    <div class="scan-sub" id="scan-sub">Probing USB transport…</div>
+  </div>
+</div>
+
+<!-- ████ ABOUT MODAL ███████████████████████████████ -->
+<div class="ov" id="mdl-about" onclick="if(event.target===this)closeMdl(this)">
+  <div class="mdl sh">
+    <div class="mh"><span>⚡ ChimeraRS</span><span class="mx" onclick="closeMdl(document.getElementById('mdl-about'))">×</span></div>
+    <div class="kv mb12">
+      <div class="kk">Version</div><div class="vv">v1.3.13 — RS Edition</div>
+      <div class="kk">Build timestamp</div><div class="vv mo">2026-03-31 · 14:39:08 UTC</div>
+      <div class="kk">Binary size</div><div class="vv">11,783,048 bytes · x86_64-unknown-linux-gnu</div>
+      <div class="kk">Rust toolchain</div><div class="vv">nightly · fat LTO · codegen-units=1</div>
+      <div class="kk">GUI framework</div><div class="vv">eframe 0.26 · egui · Metal + AppKit</div>
+      <div class="kk">Workspace crates</div><div class="vv">22 crate members</div>
+      <div class="kk">Source footprint</div><div class="vv">148 .rs files · 27,244 LOC</div>
+      <div class="kk">Smoke test</div><div class="vv G">Passed — Xvfb headless + screenshot</div>
+      <div class="kk kv-e">Build hash</div><div class="vv mo tM kv-e">a3fb6e96e80a</div>
+    </div>
+    <div class="note ne xs">ChimeraRS is provided strictly for <strong>authorised device servicing</strong>. Australian Criminal Code Act 1995 §477–478 · US CFAA · applicable local laws. Use only on devices you own outright or hold explicit written service authorisation for.</div>
+    <div class="mt6 xs tM">Independent open-source project — not affiliated with or endorsed by ChimeraTool.</div>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════
+   SHIMMER ENGINE — SolarWinds-style
+   ────────────────────────────────────────────────────
+   • CSS-class-driven: .sh marks eligible targets
+   • .sh::before = the beam (animation-play-state:paused)
+   • .sh:hover::before uses CSS vars --sh-n + --sh-d
+   • JS picks a random pattern + duration on mouseenter
+   • 8 keyframe variants including the L,R,L,L,R,L,R,R main pattern
+   • fast-to-slow easing (cubic-bezier(.72,0,.18,1))
+   • amber tint on .sh-a variants
+   • Never shimmers unless the mouse is over the element
+════════════════════════════════════════════════════ */
+
+const SH_PATTERNS = [
+  'sh-lr',    // simple L→R
+  'sh-rl',    // simple R→L
+  'sh-lrl',   // L stutter
+  'sh-rll',   // R stutter
+  'sh-main',  // THE MAIN: L,R,L,L,R,L,R,R
+  'sh-llr',   // double-L then R
+  'sh-rllr',  // R,L,L,R,L
+  'sh-drift', // slow atmospheric drift
+];
+
+// Duration spread — varied so repeated hovers feel different
+const SH_DURATIONS = [980, 1120, 1260, 1420, 1580, 1720, 1860, 2040];
+
+function pickShim() {
+  const n = SH_PATTERNS[Math.floor(Math.random() * SH_PATTERNS.length)];
+  const d = SH_DURATIONS[Math.floor(Math.random() * SH_DURATIONS.length)] + (Math.random() * 60 | 0);
+  return { n, d };
+}
+
+function bindShimmer(el) {
+  // ensure position:relative and overflow:hidden
+  const cs = getComputedStyle(el);
+  if (cs.position === 'static') el.style.position = 'relative';
+  if (cs.overflow === 'visible') el.style.overflow = 'hidden';
+
+  el.addEventListener('mouseenter', () => {
+    const { n, d } = pickShim();
+    el.style.setProperty('--sh-n', n);
+    el.style.setProperty('--sh-d', d + 'ms');
+  });
+}
+
+function initShimmer() {
+  document.querySelectorAll('.sh').forEach(el => {
+    if (!el.dataset.shBound) {
+      bindShimmer(el);
+      el.dataset.shBound = '1';
+    }
+  });
+}
+
+/* ════════════════════════════════════════
+   NAVIGATION
+════════════════════════════════════════ */
+document.querySelectorAll('.ni').forEach(el => {
+  el.addEventListener('click', () => nav(el.dataset.pg));
+});
+
+function nav(pg) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const p = document.getElementById('pg-' + pg);
+  if (p) p.classList.add('active');
+  document.querySelectorAll('.ni').forEach(el => el.classList.toggle('on', el.dataset.pg === pg));
+  addLog('I', `nav → ${pg}`);
+  setTimeout(initShimmer, 30);
+}
+
+/* ════════════════════════════════════════
+   SUB-TABS
+════════════════════════════════════════ */
+function stab(btn, prefix, idx) {
+  btn.closest('.ts').querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+  btn.classList.add('on');
+  let i = 0;
+  while (true) {
+    const el = document.getElementById(prefix + i);
+    if (!el) break;
+    el.classList.toggle('hidden', i !== idx);
+    i++;
+  }
+  setTimeout(initShimmer, 30);
+}
+
+/* ════════════════════════════════════════
+   MODE CARDS
+════════════════════════════════════════ */
+function pickMode(i) {
+  [0, 1].forEach(j => {
+    const c = document.getElementById('mc' + j);
+    c.classList.toggle('sel', j === i);
+    const t = c.querySelector('.mc-tag');
+    if (t) t.remove();
+  });
+  const mc = document.getElementById('mc' + i);
+  const t = document.createElement('div');
+  t.className = 'mc-tag';
+  t.textContent = 'Active';
+  mc.appendChild(t);
+  addLog('I', 'mode → ' + (i === 0 ? 'AUTO_DETECT' : 'DEVICE_WIZARD'));
+}
+
+/* ════════════════════════════════════════
+   QUICK SCAN
+════════════════════════════════════════ */
+const SCAN_STEPS = [
+  'Probing USB transport layer…',
+  'Enumerating ADB devices…',
+  'Querying Fastboot devices…',
+  'Probing EDL · Download mode…',
+  'Querying Apple USB-MUX…',
+  'Cross-referencing device database…',
+];
+
+function doScan() {
+  const ov = document.getElementById('scan-ov');
+  const sub = document.getElementById('scan-sub');
+  const pill = document.getElementById('dc-pill');
+  const hdr = document.getElementById('hdr');
+  ov.classList.add('open');
+  hdr.classList.add('scanning');
+  pill.className = 'pill p-scan';
+  pill.textContent = 'SCANNING…';
+  addLog('I', 'Quick scan initiated');
+  let step = 0;
+  const iv = setInterval(() => {
+    if (step < SCAN_STEPS.length) {
+      sub.textContent = SCAN_STEPS[step];
+      addLog('I', SCAN_STEPS[step]);
+      step++;
+    } else {
+      clearInterval(iv);
+      setTimeout(() => {
+        ov.classList.remove('open');
+        hdr.classList.remove('scanning');
+        pill.className = 'pill p-mute';
+        pill.textContent = '0 DEVICES';
+        addLog('I', 'Scan complete — 0 devices found on any transport');
+      }, 380);
+    }
+  }, 330);
+}
+
+/* ════════════════════════════════════════
+   CLOCK + UPTIME
+════════════════════════════════════════ */
+const startTs = Date.now();
+function tick() {
+  const now = new Date();
+  const cl = document.getElementById('hclock');
+  if (cl) cl.textContent = now.toTimeString().slice(0, 8);
+  const up = document.getElementById('uptime');
+  if (up) {
+    const s = Math.floor((Date.now() - startTs) / 1000);
+    const hh = String(Math.floor(s / 3600)).padStart(2, '0');
+    const mm = String(Math.floor((s % 3600) / 60)).padStart(2, '0');
+    const ss = String(s % 60).padStart(2, '0');
+    up.textContent = `${hh}:${mm}:${ss}`;
+  }
+}
+setInterval(tick, 1000); tick();
+
+/* ════════════════════════════════════════
+   COUNT-UP
+════════════════════════════════════════ */
+function countUp(el, target, ms) {
+  const t0 = performance.now();
+  const step = now => {
+    const p = Math.min(1, (now - t0) / ms);
+    const ease = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.round(ease * target);
+    if (p < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+/* ════════════════════════════════════════
+   LUHN
+════════════════════════════════════════ */
+function luhn(s) {
+  if (!/^\d{15}$/.test(s)) return false;
+  let sum = 0;
+  for (let i = 0; i < 15; i++) {
+    let d = +s[i];
+    if (i % 2 === 1) { d *= 2; if (d > 9) d -= 9; }
+    sum += d;
+  }
+  return sum % 10 === 0;
+}
+function doImei() {
+  const v = document.getElementById('imeiIn').value.replace(/\D/g, '');
+  const el = document.getElementById('imeiR');
+  if (!v) { el.innerHTML = '<span class="tM xs">Enter an IMEI above to validate.</span>'; return; }
+  const ok = luhn(v);
+  el.innerHTML = ok
+    ? '<span class="tG sm">✓ &thinsp;Valid IMEI — Luhn algorithm passed</span>'
+    : '<span class="tR sm">✗ &thinsp;Invalid IMEI — Luhn check failed</span>';
+  addLog(ok ? 'I' : 'W', `IMEI validate: ${ok ? 'PASS' : 'FAIL'} — ${v.slice(0, 6)}***`);
+}
+function doDec() {
+  const v = document.getElementById('imeiD').value.replace(/\D/g, '');
+  const el = document.getElementById('imeiDR');
+  if (!/^\d{15}$/.test(v)) { el.innerHTML = '<span class="tM xs">Enter a 15-digit IMEI to decode.</span>'; return; }
+  el.innerHTML = `<div class="kv"><div class="kk">TAC (Type Allocation Code)</div><div class="vv mo">${v.slice(0,8)}</div><div class="kk">SNR (Serial Number)</div><div class="vv mo">${v.slice(8,14)}</div><div class="kk">Check Digit</div><div class="vv mo">${v[14]}</div><div class="kk kv-e">Luhn Validity</div><div class="vv ${luhn(v)?'G':'R'} kv-e">${luhn(v)?'Valid':'Invalid'}</div></div>`;
+}
+
+/* ════════════════════════════════════════
+   AU WIZARD
+════════════════════════════════════════ */
+function runWiz() {
+  const imei = document.getElementById('wImei').value.replace(/\D/g, '');
+  const carr = document.getElementById('wCarr').value;
+  const el = document.getElementById('wRes');
+  if (!luhn(imei)) {
+    el.innerHTML = '<div class="note nw xs">Invalid IMEI — verify the number and retry.</div>';
+    return;
+  }
+  el.innerHTML = `<div class="note nk xs">✓ &thinsp;IMEI validated — ${carr} unlock request ready<br><br>
+<span class="tD">Step 1</span> &mdash; Navigate to the ${carr} device unlock portal<br>
+<span class="tD">Step 2</span> &mdash; Enter IMEI: <span class="mo">${imei}</span><br>
+<span class="tD">Step 3</span> &mdash; Submit free unlock request (eligible devices only)<br>
+<span class="tD">Step 4</span> &mdash; Allow 24–72 hours for carrier processing<br>
+<span class="tD">Step 5</span> &mdash; Insert a non-${carr} SIM and follow on-screen prompts</div>`;
+  addLog('I', `AU wizard — IMEI ${imei.slice(0,6)}*** · ${carr}`);
+}
+function valImei() {
+  const v = document.getElementById('vImei').value.replace(/\D/g, '');
+  document.getElementById('vRes').innerHTML = luhn(v)
+    ? '<div class="note nk xs">✓ &thinsp;Valid IMEI — Luhn algorithm passed</div>'
+    : '<div class="note nw xs">✗ &thinsp;Invalid IMEI — Luhn check failed</div>';
+}
+
+/* ════════════════════════════════════════
+   LOG — typewriter on new entries
+════════════════════════════════════════ */
+function addLog(lvl, msg) {
+  const lb = document.getElementById('lb');
+  const fl = document.getElementById('fulllog');
+  const ts = new Date().toTimeString().slice(0, 8);
+  const cls = lvl === 'I' ? 'lI' : lvl === 'W' ? 'lW' : 'lE';
+  const lbl = lvl === 'I' ? 'INFO' : lvl === 'W' ? 'WARN' : 'ERR';
+  const h = `<div class="ll new"><span class="lt">${ts}</span><span class="${cls}"> ${lbl}</span><span class="lm">${msg}</span></div>`;
+  [lb, fl].forEach(el => { if (el) el.insertAdjacentHTML('beforeend', h); });
+  if (lb) lb.scrollTop = lb.scrollHeight;
+  const lines = lb ? lb.querySelectorAll('.ll.new') : [];
+  if (lines.length) setTimeout(() => lines[lines.length-1].classList.remove('new'), 380);
+}
+
+/* ════════════════════════════════════════
+   MODAL
+════════════════════════════════════════ */
+function openMdl(id) { document.getElementById(id).classList.add('open'); }
+function closeMdl(el) { el.classList.remove('open'); }
+
+/* ════════════════════════════════════════
+   INIT
+════════════════════════════════════════ */
+window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('lb').scrollTop = 9999;
+  setTimeout(() => countUp(document.getElementById('s-mod'), 65, 900), 150);
+  initShimmer();
+  // Re-bind shimmer after any DOM changes (new tab panels, etc.)
+  new MutationObserver(() => initShimmer())
+    .observe(document.getElementById('content'), { childList: true, subtree: true });
+});
+</script>
+</body>
+</html>

@@ -111,7 +111,7 @@ toml   = "1.1"
 config = "0.15"
 
 # Platform
-uuid        = { version = "1.23", features = ["v4"] }
+uuid        = { version = "1.23", features = ["v4", "serde"] }
 rand        = "0.10"
 num-traits  = "0.2"
 
