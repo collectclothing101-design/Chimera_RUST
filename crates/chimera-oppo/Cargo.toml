@@ -1,0 +1,14 @@
+[package]
+name = "chimera-oppo"
+version = "1.0.0"
+edition = "2021"
+
+[dependencies]
+chimera-core     = { path = "../chimera-core" }
+chimera-adb      = { path = "../chimera-adb" }
+chimera-fastboot = { path = "../chimera-fastboot" }
+serde = { workspace = true }
+log = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+bytes = { workspace = true }

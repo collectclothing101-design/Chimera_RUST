@@ -1,0 +1,27 @@
+# cbindgen configuration for chimera-ffi
+# Reference: https://github.com/mozilla/cbindgen/blob/master/docs.md
+
+language       = "C"
+cpp_compat     = true
+pragma_once    = true
+include_guard  = "CHIMERA_FFI_H"
+documentation  = true
+documentation_style = "doxy"
+style          = "type"
+
+[parse]
+parse_deps    = false
+include       = ["chimera-ffi"]
+
+[export]
+include       = []
+exclude       = []
+
+[fn]
+prefix        = ""
+postfix       = ""
+args          = "auto"
+rename_args   = "snake_case"
+
+[enum]
+rename_variants = "QualifiedScreamingSnakeCase"

@@ -1,0 +1,8 @@
+// module.modulemap
+// Used when chimera_ffi is consumed as a Clang module (SPM target).
+
+module ChimeraFFI {
+    header "chimera_ffi.h"
+    link "chimera_ffi"
+    export *
+}

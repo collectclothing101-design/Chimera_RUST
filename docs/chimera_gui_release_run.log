@@ -1,0 +1,5 @@
+[2m2026-03-31T14:38:26.132182Z[0m [32m INFO[0m [2mchimera[0m[2m:[0m Starting ChimeraRS v1.3.13 on macOS (x86_64)
+[2m2026-03-31T14:38:26.134051Z[0m [33m WARN[0m [2mwinit::platform_impl::platform::x11::xdisplay[0m[2m:[0m error setting XSETTINGS; Xft options won't reload automatically
+[2m2026-03-31T14:38:26.141233Z[0m [33m WARN[0m [2mwinit::platform_impl::platform::x11::util::randr[0m[2m:[0m XRandR reported that the display's 0mm in size, which is certifiably insane
+[2m2026-03-31T14:38:26.593636Z[0m [32m INFO[0m [2mwinit::platform_impl::platform::x11::window[0m[2m:[0m Guessed window scale factor: 1
+[2m2026-03-31T14:38:26.615135Z[0m [32m INFO[0m [2mchimera::worker[0m[2m:[0m GUI worker pool started

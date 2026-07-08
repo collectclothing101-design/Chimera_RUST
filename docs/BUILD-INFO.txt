@@ -1,0 +1,11 @@
+ChimeraRS v1.3.13 Linux release package
+Built on: 2026-03-31 14:39:08 UTC
+Binary: chimera (release-mode, x86_64-unknown-linux-gnu)
+Binary size: 11783048 bytes
+Smoke test: release binary launched successfully under Xvfb and rendered to screenshot.
+Included files:
+- chimera
+- chimera_release_build.log
+- chimera_gui_release_run.log
+- chimera-gui-release-smoketest.png
+- chimera_core_tests2.log

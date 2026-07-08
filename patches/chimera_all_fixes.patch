@@ -1,0 +1,156 @@
+## ============================================================
+## CHIMERA RUST — ALL COMPILE FIXES (excluding au_carrier_unlock)
+## Apply each hunk manually or via `patch -p1 < chimera_all_fixes.patch`
+## from your project root.
+## ============================================================
+
+
+## ────────────────────────────────────────────────────────────
+## 1. crates/chimera-fastboot/src/client.rs
+##    warning: constant `MAX_PACKET` is never used
+## ────────────────────────────────────────────────────────────
+--- a/crates/chimera-fastboot/src/client.rs
++++ b/crates/chimera-fastboot/src/client.rs
+@@ -11,7 +11,8 @@
+-const MAX_PACKET: usize = 64;
++/// USB Full-Speed packet boundary for Fastboot bulk-out transfers.
++#[allow(dead_code)]
++pub const MAX_PACKET: usize = 64;
+
+
+## ────────────────────────────────────────────────────────────
+## 2. crates/chimera-samsung/src/odin.rs
+##    warning: field `if_num` is never read
+## ────────────────────────────────────────────────────────────
+--- a/crates/chimera-samsung/src/odin.rs
++++ b/crates/chimera-samsung/src/odin.rs
+@@ -134,7 +134,8 @@
+ pub struct OdinSession {
+     // ...existing fields...
+-    if_num: u8,
++    /// USB interface number claimed during session open.
++    pub if_num: u8,
+ }
+
+
+## ────────────────────────────────────────────────────────────
+## 3. crates/chimera-api/src/client.rs
+##    warning: fields `app_version` and `signing_key` are never read
+## ────────────────────────────────────────────────────────────
+--- a/crates/chimera-api/src/client.rs
++++ b/crates/chimera-api/src/client.rs
+@@ -148,8 +148,10 @@
+ pub struct ApiClient {
+     // ...existing fields...
+-    app_version: String,
+-    signing_key: Vec<u8>,
++    /// Reported application version sent in X-App-Version header.
++    pub app_version: String,
++    /// HMAC-SHA256 signing key for request authentication.
++    pub signing_key: Vec<u8>,
+ }
+
+
+## ────────────────────────────────────────────────────────────
+## 4. crates/chimera-apple/src/operations.rs
+##    error[E0599]: TssClient::new() does not exist
+##    Use TssClient::apple() for default Apple TSS servers,
+##    or TssClient::proxy() for a custom proxy URL.
+## ────────────────────────────────────────────────────────────
+--- a/crates/chimera-apple/src/operations.rs
++++ b/crates/chimera-apple/src/operations.rs
+@@ -414,7 +414,7 @@
+-        let tss = TssClient::new();
++        let tss = TssClient::apple();
+
+
+## ────────────────────────────────────────────────────────────
+## 5. crates/chimera-apple/src/lockdown.rs  line 271
+##    error[E0308]: plist_value_from_plist() returns String,
+##    but Ok(Some(…)) expects PlistValue.
+##    Wrap in PlistValue::String(…).
+## ────────────────────────────────────────────────────────────
+--- a/crates/chimera-apple/src/lockdown.rs
++++ b/crates/chimera-apple/src/lockdown.rs
+@@ -268,7 +268,7 @@
+-                    return Ok(Some(plist_value_from_plist(val)));
++                    return Ok(Some(PlistValue::String(plist_value_from_plist(val))));
+
+
+## ────────────────────────────────────────────────────────────
+## 6. crates/chimera-apple/src/lockdown.rs  lines 329 & 331
+##    error[E0599]: .copied() is for Option<&T>, not Option<bool>.
+##    Option<bool> is already Copy — remove the .copied() call.
+## ────────────────────────────────────────────────────────────
+--- a/crates/chimera-apple/src/lockdown.rs
++++ b/crates/chimera-apple/src/lockdown.rs
+@@ -326,10 +326,10 @@
+-            v.is_supervised    = dict.get("IsSupervised")
+-                .and_then(|x| x.as_boolean()).copied();
++            v.is_supervised    = dict.get("IsSupervised")
++                .and_then(|x| x.as_boolean());
+ 
+-            v.password_protected = dict.get("PasswordProtected")
+-                .and_then(|x| x.as_boolean()).copied();
++            v.password_protected = dict.get("PasswordProtected")
++                .and_then(|x| x.as_boolean());
+
+
+## ────────────────────────────────────────────────────────────
+## 7. crates/chimera-apple/src/lockdown.rs  (warning cleanup)
+## ────────────────────────────────────────────────────────────
+--- a/crates/chimera-apple/src/lockdown.rs
++++ b/crates/chimera-apple/src/lockdown.rs
+@@ -9,4 +9,4 @@
+-use log::{debug, info, warn};
++use log::{debug, info};
+
+
+## ────────────────────────────────────────────────────────────
+## 8. crates/chimera-apple/src/operations.rs  (warning cleanup)
+## ────────────────────────────────────────────────────────────
+--- a/crates/chimera-apple/src/operations.rs
++++ b/crates/chimera-apple/src/operations.rs
+@@ -6,4 +6,4 @@
+-use log::{info, warn, error};
++use log::{info, warn};
+ 
+@@ -11,4 +11,4 @@
+-use crate::device::{AppleDeviceInfo, AppleChipset, IosConnectionMode, re...
++use crate::device::{AppleDeviceInfo, re...
+ 
+@@ -15,4 +15,4 @@
+-use crate::activation::{ActivationInfo, ActivationLockStatus, query_acti...
++use crate::activation::{ActivationInfo, query_acti...
+ 
+@@ -17,4 +17,4 @@
+-use crate::passcode::{PasscodeManager, PasscodeResult, PasscodeOperation};
++use crate::passcode::{PasscodeManager, PasscodeResult};
+ 
+@@ -21,4 +21,4 @@
+-use crate::{…, mcc_unlock_status_url, gateway_australia_url,
++use crate::{…, mcc_unlock_status_url,
+
+
+## ────────────────────────────────────────────────────────────
+## 9. crates/chimera-apple/src/lib.rs
+##    Stub out the au_carrier_unlock module to isolate it from
+##    the build without deleting the file.
+##    Replace the current module pub-use block with a cfg-gated
+##    stub so the rest of the crate compiles cleanly.
+## ────────────────────────────────────────────────────────────
+--- a/crates/chimera-apple/src/lib.rs
++++ b/crates/chimera-apple/src/lib.rs
+@@ -24,8 +24,14 @@
+-pub mod au_carrier_unlock;
+-use au_carrier_unlock::{
+-    AuIphoneUnlockWizard, validate_imei, is_apple_imei,
+-    …
+-};
++/// AU carrier-unlock module is feature-gated; build with
++/// --features au_carrier_unlock to include it.
++#[cfg(feature = "au_carrier_unlock")]
++pub mod au_carrier_unlock;
++
++#[cfg(feature = "au_carrier_unlock")]
++pub use au_carrier_unlock::{AuIphoneUnlockWizard, validate_imei, is_apple_imei};

@@ -1,0 +1,14 @@
+[package]
+name = "chimera-devices"
+version = "1.0.0"
+edition = "2021"
+description = "Device database and auto-detection for ChimeraRS"
+
+[dependencies]
+chimera-core = { path = "../chimera-core" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+log = { workspace = true }
+rusb = { workspace = true }
+indexmap = { workspace = true }
+crossbeam-channel = { workspace = true }

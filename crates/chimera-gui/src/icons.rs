@@ -1,0 +1,45 @@
+#![allow(dead_code)]
+// chimera-gui/src/icons.rs
+// Icon/emoji constants for the UI
+
+pub const ICON_DEVICE: &str = "📱";
+pub const ICON_SAMSUNG: &str = "🔵";
+pub const ICON_XIAOMI: &str = "🟠";
+pub const ICON_HUAWEI: &str = "🔴";
+pub const ICON_MTK: &str = "🟢";
+pub const ICON_CONNECT: &str = "🔌";
+pub const ICON_DISCONNECT: &str = "⛔";
+pub const ICON_SCAN: &str = "🔍";
+pub const ICON_REFRESH: &str = "🔄";
+pub const ICON_FLASH: &str = "⚡";
+pub const ICON_FRP: &str = "🔓";
+pub const ICON_IMEI: &str = "📋";
+pub const ICON_BACKUP: &str = "💾";
+pub const ICON_RESTORE: &str = "📤";
+pub const ICON_ROOT: &str = "🌲";
+pub const ICON_MDM: &str = "🏢";
+pub const ICON_LOCK: &str = "🔒";
+pub const ICON_UNLOCK: &str = "🔓";
+pub const ICON_FIRMWARE: &str = "📦";
+pub const ICON_INFO: &str = "ℹ️";
+pub const ICON_SUCCESS: &str = "✅";
+pub const ICON_ERROR: &str = "❌";
+pub const ICON_WARNING: &str = "⚠️";
+pub const ICON_SETTINGS: &str = "⚙️";
+pub const ICON_LOG: &str = "📜";
+pub const ICON_COPY: &str = "📋";
+pub const ICON_FOLDER: &str = "📁";
+pub const ICON_QR: &str = "📲";
+pub const ICON_NETWORK: &str = "📡";
+pub const ICON_CERT: &str = "📜";
+pub const ICON_CSC: &str = "🗺️";
+pub const ICON_REBOOT: &str = "🔁";
+pub const ICON_DEMO: &str = "🏪";
+pub const ICON_SHIELD: &str = "🛡️";
+pub const ICON_KNOX: &str = "🔐";
+pub const ICON_EFS: &str = "💿";
+pub const ICON_BOOT: &str = "🥾";
+pub const ICON_CHIP: &str = "🔲";
+pub const ICON_PLAY: &str = "▶️";
+pub const ICON_STOP: &str = "⏹️";
+pub const ICON_CHECK: &str = "✔";

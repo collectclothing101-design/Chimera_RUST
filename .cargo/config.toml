@@ -1,0 +1,34 @@
+# .cargo/config.toml
+# macOS 10.14.6 (Mojave) — Intel Core i7 2.8 GHz — x86_64-apple-darwin
+#
+# Sets the default build target so you can just run:
+#   cargo build --release
+# (without needing --target x86_64-apple-darwin every time)
+
+[build]
+target = "x86_64-apple-darwin"
+
+# macOS linker flags
+[target.x86_64-apple-darwin]
+# -Wl,-dead_strip  — removes unused code (Apple ld64 equivalent of --gc-sections)
+# -framework AppKit -framework Foundation — required by eframe/egui on macOS
+# -framework Metal -framework QuartzCore  — required by eframe Metal renderer
+# -framework IOKit                         — required by rusb / serialport / ADB USB
+# -framework Security                      — required by reqwest native-tls
+# -framework CoreFoundation                — required by many Apple APIs
+rustflags = [
+    "-C", "link-arg=-Wl,-dead_strip",
+    "-C", "link-arg=-framework", "-C", "link-arg=AppKit",
+    "-C", "link-arg=-framework", "-C", "link-arg=Foundation",
+    "-C", "link-arg=-framework", "-C", "link-arg=Metal",
+    "-C", "link-arg=-framework", "-C", "link-arg=QuartzCore",
+    "-C", "link-arg=-framework", "-C", "link-arg=IOKit",
+    "-C", "link-arg=-framework", "-C", "link-arg=Security",
+    "-C", "link-arg=-framework", "-C", "link-arg=CoreFoundation",
+]
+
+# Ensure libusb can be found (Homebrew on Intel macOS installs to /usr/local)
+[env]
+PKG_CONFIG_PATH    = "/usr/local/lib/pkgconfig:/usr/local/opt/libusb/lib/pkgconfig"
+LIBRARY_PATH       = "/usr/local/lib"
+MACOSX_DEPLOYMENT_TARGET = "10.14"

@@ -1,0 +1,24 @@
+[package]
+name = "chimera-edl"
+version = "1.0.0"
+edition = "2021"
+description = "Qualcomm EDL/Sahara/Firehose protocol for ChimeraRS"
+
+[dependencies]
+chimera-core = { path = "../chimera-core" }
+rusb = { workspace = true }
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+log = { workspace = true }
+bytes = { workspace = true }
+byteorder = { workspace = true }
+hex = { workspace = true }
+sha2 = { workspace = true }
+md-5 = { workspace = true }
+crc32fast = { workspace = true }
+crc = { workspace = true }
+async-trait = "0.1"
+quick-xml = "0.40"

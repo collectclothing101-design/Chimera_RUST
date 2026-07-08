@@ -1,0 +1,28 @@
+[package]
+name = "chimera-core"
+version = "1.1.0"
+edition = "2021"
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+log = { workspace = true }
+sha2 = { workspace = true }
+sha1 = { workspace = true }
+md-5 = { workspace = true }
+hex = { workspace = true }
+aes = { workspace = true }
+crc32fast = { workspace = true }
+bytes = { workspace = true }
+byteorder = { workspace = true }
+base64 = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+rand = { workspace = true }
+rusb = { workspace = true }
+async-trait = "0.1"
+indexmap = { workspace = true }
+toml = { workspace = true }
+crossbeam-channel = { workspace = true }

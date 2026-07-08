@@ -17,8 +17,8 @@ set -euo pipefail
 # ═════════════════════════════════════════════════════════════════════════════
 
 APP_NAME="Chimera"
-BUNDLE_ID="com.chimeratool.chimera"
-DMG_NAME="${APP_NAME}_$(date +%Y%m%d).dmg"
+BUNDLE_ID="io.chimerars.chimera"
+DMG_NAME="${APP_NAME}RS_$(date +%Y%m%d).dmg"
 VOLUME_NAME="${APP_NAME}RS"
 BACKGROUND_IMAGE="deploy/dmg_background.png"
 ICON_POSITION_X=400
@@ -44,10 +44,10 @@ done
 echo "=== Building Chimera.app ==="
 
 if $RELEASE; then
-    ./deploy/build_app.sh --release --universal
+    ./deploy/build_app.sh --release --universal --no-sign
     APP_PATH="target/release/Chimera.app"
 else
-    ./deploy/build_app.sh
+    ./deploy/build_app.sh --universal --no-sign
     APP_PATH="target/debug/Chimera.app"
 fi
 

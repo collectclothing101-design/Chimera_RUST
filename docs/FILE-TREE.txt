@@ -1,0 +1,431 @@
+Chimera_RUST/
+├── certification-artifacts/
+│   ├── certification-status.json
+│   ├── environment.txt
+│   └── rustup-toolchain.log
+├── crates/
+│   ├── chimera-adb/
+│   │   ├── src/
+│   │   │   ├── auth.rs
+│   │   │   ├── client.rs
+│   │   │   ├── diagnostics.rs
+│   │   │   ├── lib.rs
+│   │   │   ├── operations.rs
+│   │   │   ├── protocol.rs
+│   │   │   ├── services.rs
+│   │   │   ├── shell.rs
+│   │   │   └── sync.rs
+│   │   └── Cargo.toml
+│   ├── chimera-api/
+│   │   ├── src/
+│   │   │   ├── auth.rs
+│   │   │   ├── client.rs
+│   │   │   ├── device_api.rs
+│   │   │   ├── endpoints.rs
+│   │   │   ├── firmware_api.rs
+│   │   │   ├── lib.rs
+│   │   │   ├── mock_server.rs
+│   │   │   ├── open_alternatives.rs
+│   │   │   ├── pics_api.rs
+│   │   │   ├── portcheck.rs
+│   │   │   ├── secure_api.rs
+│   │   │   └── upload_api.rs
+│   │   └── Cargo.toml
+│   ├── chimera-apple/
+│   │   ├── src/
+│   │   │   ├── activation.rs
+│   │   │   ├── au_carrier_unlock.rs
+│   │   │   ├── bypass.rs
+│   │   │   ├── device.rs
+│   │   │   ├── icloud_endpoints.rs
+│   │   │   ├── ipsw.rs
+│   │   │   ├── lib.rs
+│   │   │   ├── lockdown.rs
+│   │   │   ├── network_unlock.rs
+│   │   │   ├── operations.rs
+│   │   │   ├── passcode.rs
+│   │   │   ├── recovery.rs
+│   │   │   ├── restore.rs
+│   │   │   ├── shsh.rs
+│   │   │   └── spoof_bypass.rs
+│   │   └── Cargo.toml
+│   ├── chimera-core/
+│   │   ├── src/
+│   │   │   ├── backup.rs
+│   │   │   ├── certificate.rs
+│   │   │   ├── crypto.rs
+│   │   │   ├── device.rs
+│   │   │   ├── diagnostics.rs
+│   │   │   ├── error.rs
+│   │   │   ├── event.rs
+│   │   │   ├── firmware_meta.rs
+│   │   │   ├── imei.rs
+│   │   │   ├── lib.rs
+│   │   │   ├── mac_address.rs
+│   │   │   ├── progress.rs
+│   │   │   ├── protocol.rs
+│   │   │   ├── session.rs
+│   │   │   └── usb.rs
+│   │   └── Cargo.toml
+│   ├── chimera-devices/
+│   │   ├── src/
+│   │   │   ├── database.rs
+│   │   │   ├── detector.rs
+│   │   │   ├── lib.rs
+│   │   │   └── scanner.rs
+│   │   └── Cargo.toml
+│   ├── chimera-edl/
+│   │   ├── src/
+│   │   │   ├── client.rs
+│   │   │   ├── firehose.rs
+│   │   │   ├── lib.rs
+│   │   │   ├── operations.rs
+│   │   │   ├── sahara.rs
+│   │   │   └── usb.rs
+│   │   └── Cargo.toml
+│   ├── chimera-fastboot/
+│   │   ├── src/
+│   │   │   ├── client.rs
+│   │   │   ├── flash.rs
+│   │   │   ├── lib.rs
+│   │   │   ├── protocol.rs
+│   │   │   └── variables.rs
+│   │   └── Cargo.toml
+│   ├── chimera-ffi/
+│   │   ├── include/
+│   │   │   └── chimera_ffi.h
+│   │   ├── src/
+│   │   │   └── lib.rs
+│   │   ├── Cargo.toml
+│   │   ├── build.rs
+│   │   └── cbindgen.toml
+│   ├── chimera-firmware/
+│   │   ├── src/
+│   │   │   ├── checker.rs
+│   │   │   ├── downloader.rs
+│   │   │   ├── extractor.rs
+│   │   │   ├── lib.rs
+│   │   │   └── samsung_fw.rs
+│   │   └── Cargo.toml
+│   ├── chimera-gui/
+│   │   ├── assets/
+│   │   │   ├── AppIcon.icns
+│   │   │   ├── favicon.png
+│   │   │   └── icon.rgba
+│   │   ├── src/
+│   │   │   ├── ui/
+│   │   │   │   ├── about.rs
+│   │   │   │   ├── api_panel.rs
+│   │   │   │   ├── apple_panel.rs
+│   │   │   │   ├── au_unlock_panel.rs
+│   │   │   │   ├── common.rs
+│   │   │   │   ├── dashboard.rs
+│   │   │   │   ├── device_info.rs
+│   │   │   │   ├── device_list.rs
+│   │   │   │   ├── diagnostics_panel.rs
+│   │   │   │   ├── downloads.rs
+│   │   │   │   ├── firmware_panel.rs
+│   │   │   │   ├── hash_panel.rs
+│   │   │   │   ├── history_panel.rs
+│   │   │   │   ├── layout.rs
+│   │   │   │   ├── log_panel.rs
+│   │   │   │   ├── menu.rs
+│   │   │   │   ├── mod.rs
+│   │   │   │   ├── nav.rs
+│   │   │   │   ├── network_tools.rs
+│   │   │   │   ├── operations.rs
+│   │   │   │   ├── pages.rs
+│   │   │   │   ├── pages_additions.rs
+│   │   │   │   ├── settings_network_mac.rs
+│   │   │   │   ├── settings_panel.rs
+│   │   │   │   ├── shsh_panel.rs
+│   │   │   │   ├── ssh_panel.rs
+│   │   │   │   ├── theme.rs
+│   │   │   │   └── utilities_panel.rs
+│   │   │   ├── app.rs
+│   │   │   ├── history.rs
+│   │   │   ├── icons.rs
+│   │   │   ├── local_event.rs
+│   │   │   ├── main.rs
+│   │   │   ├── menu.rs
+│   │   │   ├── persistence.rs
+│   │   │   ├── state.rs
+│   │   │   ├── theme.rs
+│   │   │   └── worker.rs
+│   │   ├── Cargo.toml
+│   │   ├── fix_all_now.py
+│   │   └── settings_network_mac.rs
+│   ├── chimera-htc/
+│   │   ├── src/
+│   │   │   ├── lib.rs
+│   │   │   └── operations.rs
+│   │   └── Cargo.toml
+│   ├── chimera-huawei/
+│   │   ├── src/
+│   │   │   ├── fastboot_mode.rs
+│   │   │   ├── harmony_cable.rs
+│   │   │   ├── lib.rs
+│   │   │   └── operations.rs
+│   │   └── Cargo.toml
+│   ├── chimera-imobile/
+│   │   ├── src/
+│   │   │   ├── activation.rs
+│   │   │   ├── backup.rs
+│   │   │   ├── diagnostics.rs
+│   │   │   ├── idevice_id.rs
+│   │   │   ├── info.rs
+│   │   │   ├── lib.rs
+│   │   │   ├── pair.rs
+│   │   │   ├── recovery.rs
+│   │   │   ├── restore.rs
+│   │   │   └── tool.rs
+│   │   └── Cargo.toml
+│   ├── chimera-lg/
+│   │   ├── src/
+│   │   │   ├── lib.rs
+│   │   │   └── operations.rs
+│   │   └── Cargo.toml
+│   ├── chimera-motorola/
+│   │   ├── src/
+│   │   │   ├── lib.rs
+│   │   │   └── operations.rs
+│   │   └── Cargo.toml
+│   ├── chimera-mtk/
+│   │   ├── src/
+│   │   │   ├── brom.rs
+│   │   │   ├── da_protocol.rs
+│   │   │   ├── lib.rs
+│   │   │   ├── mtk_chipsets.rs
+│   │   │   ├── mtk_usb_vid_pid.txt
+│   │   │   ├── operations.rs
+│   │   │   └── preloader.rs
+│   │   └── Cargo.toml
+│   ├── chimera-nokia/
+│   │   ├── src/
+│   │   │   ├── lib.rs
+│   │   │   └── operations.rs
+│   │   └── Cargo.toml
+│   ├── chimera-nothing/
+│   │   ├── src/
+│   │   │   ├── lib.rs
+│   │   │   └── operations.rs
+│   │   └── Cargo.toml
+│   ├── chimera-oppo/
+│   │   ├── src/
+│   │   │   ├── coloros.rs
+│   │   │   ├── lib.rs
+│   │   │   └── operations.rs
+│   │   └── Cargo.toml
+│   ├── chimera-samsung/
+│   │   ├── src/
+│   │   │   ├── certificate.rs
+│   │   │   ├── efs.rs
+│   │   │   ├── firmware.rs
+│   │   │   ├── frp.rs
+│   │   │   ├── imei.rs
+│   │   │   ├── lib.rs
+│   │   │   ├── mdm.rs
+│   │   │   ├── mtk.rs
+│   │   │   ├── odin.rs
+│   │   │   └── operations.rs
+│   │   └── Cargo.toml
+│   ├── chimera-sony/
+│   │   ├── src/
+│   │   │   ├── bootloader.rs
+│   │   │   ├── flash.rs
+│   │   │   ├── lib.rs
+│   │   │   ├── operations.rs
+│   │   │   └── ta_partition.rs
+│   │   └── Cargo.toml
+│   ├── chimera-unisoc/
+│   │   ├── src/
+│   │   │   ├── brom.rs
+│   │   │   ├── lib.rs
+│   │   │   ├── operations.rs
+│   │   │   └── pac.rs
+│   │   └── Cargo.toml
+│   ├── chimera-utils/
+│   │   ├── src/
+│   │   │   ├── au_network_unlock.rs
+│   │   │   ├── host_probes.rs
+│   │   │   ├── imei_check.rs
+│   │   │   ├── lib.rs
+│   │   │   ├── magisk.rs
+│   │   │   ├── network_codes.rs
+│   │   │   ├── qr_code.rs
+│   │   │   └── tap_diag.rs
+│   │   └── Cargo.toml
+│   └── chimera-xiaomi/
+│       ├── src/
+│       │   ├── edl_ops.rs
+│       │   ├── fastboot_ops.rs
+│       │   ├── lib.rs
+│       │   ├── miassistant.rs
+│       │   ├── operations.rs
+│       │   └── unlock.rs
+│       └── Cargo.toml
+├── deploy/
+│   ├── AppIcon.icns
+│   ├── build_app.sh
+│   └── build_rust.sh
+├── docs/
+│   ├── ARCHITECT-AUDIT.md
+│   ├── BUILD-INFO.txt
+│   ├── BUILD-STATUS.md
+│   ├── CHANGELOG.md
+│   ├── CHANGELOG_v1.3.6.md
+│   ├── Chimera_RUST-dash.png
+│   ├── FILE-TREE.txt
+│   ├── Gold_Finger.png
+│   ├── IMPLEMENTATION-ROADMAP.md
+│   ├── chimera-gui-release-smoketest.png
+│   ├── chimera-gui.html
+│   ├── chimera-gui187.html
+│   ├── chimera-gui_1.html
+│   ├── chimera-gui_2.html
+│   ├── chimera-gui_3.html
+│   ├── chimera_core_tests2.log
+│   ├── chimera_gui_release_run.log
+│   ├── chimera_release_build.log
+│   └── goldfinger.png
+├── macos_app/
+│   ├── swift/
+│   │   ├── Chimera/
+│   │   │   ├── Bridging/
+│   │   │   │   ├── Chimera-Bridging-Header.h
+│   │   │   │   └── module.modulemap
+│   │   │   ├── Resources/
+│   │   │   │   └── bridge.js
+│   │   │   └── Sources/
+│   │   │       ├── AppDelegate.swift
+│   │   │       ├── BridgeMessageHandler.swift
+│   │   │       ├── ChimeraEngine.swift
+│   │   │       ├── MainWindowController.swift
+│   │   │       └── WebViewController.swift
+│   │   └── ChimeraTests/
+│   │       ├── BridgeMessageHandlerTests.swift
+│   │       └── ChimeraEngineTests.swift
+│   ├── Info.plist
+│   └── entitlements.plist
+├── patches/
+│   └── chimera_all_fixes.patch
+├── vendor/
+│   ├── arrayref/
+│   │   ├── src/
+│   │   │   └── lib.rs
+│   │   └── Cargo.toml
+│   └── idevice/
+│       ├── windows/
+│       │   ├── bz2.dll
+│       │   ├── getopt.dll
+│       │   ├── idevice_id.exe
+│       │   ├── ideviceactivation.dll
+│       │   ├── ideviceactivation.exe
+│       │   ├── idevicebackup.exe
+│       │   ├── idevicebackup2.exe
+│       │   ├── idevicecrashreport.exe
+│       │   ├── idevicedate.exe
+│       │   ├── idevicedebug.exe
+│       │   ├── idevicedebugserverproxy.exe
+│       │   ├── idevicediagnostics.exe
+│       │   ├── ideviceenterrecovery.exe
+│       │   ├── ideviceenterrecovery2.exe
+│       │   ├── ideviceimagemounter.exe
+│       │   ├── ideviceinfo.exe
+│       │   ├── ideviceinstaller.exe
+│       │   ├── idevicename.exe
+│       │   ├── idevicenotificationproxy.exe
+│       │   ├── idevicepair.exe
+│       │   ├── ideviceprovision.exe
+│       │   ├── idevicerestore.exe
+│       │   ├── idevicescreenshot.exe
+│       │   ├── idevicesetlocation.exe
+│       │   ├── idevicesyslog.exe
+│       │   ├── imobiledevice-net-lighthouse.dll
+│       │   ├── imobiledevice.dll
+│       │   ├── inetcat.exe
+│       │   ├── ios_webkit_debug_proxy.exe
+│       │   ├── iproxy.exe
+│       │   ├── irecovery.dll
+│       │   ├── irecovery.exe
+│       │   ├── libbrotlicommon.dll
+│       │   ├── libbrotlidec.dll
+│       │   ├── libbz2-1.dll
+│       │   ├── libcharset.dll
+│       │   ├── libcrypto-1_1-x64.dll
+│       │   ├── libcrypto-1_1.dll
+│       │   ├── libcurl-4.dll
+│       │   ├── libcurl.dll
+│       │   ├── libeay32.dll
+│       │   ├── libffi-6.dll
+│       │   ├── libgcc_s_dw2-1.dll
+│       │   ├── libgmp-10.dll
+│       │   ├── libgnutls-30.dll
+│       │   ├── libhogweed-4-2.dll
+│       │   ├── libhogweed-4.dll
+│       │   ├── libiconv-2.dll
+│       │   ├── libiconv.dll
+│       │   ├── libideviceactivation-2.dll
+│       │   ├── libideviceactivation.dll
+│       │   ├── libidn-11.dll
+│       │   ├── libidn2-0.dll
+│       │   ├── libimobiledevice-1.0.dll
+│       │   ├── libimobiledevice-glue-1.0.dll
+│       │   ├── libimobiledevice.dll
+│       │   ├── libintl-8.dll
+│       │   ├── libirecovery.dll
+│       │   ├── liblzma-5.dll
+│       │   ├── libnettle-6-2.dll
+│       │   ├── libnettle-6.dll
+│       │   ├── libnghttp2-14.dll
+│       │   ├── libp11-kit-0.dll
+│       │   ├── libplist++-3.dll
+│       │   ├── libplist++.dll
+│       │   ├── libplist-2.0.dll
+│       │   ├── libplist.dll
+│       │   ├── libpsl-5.dll
+│       │   ├── libreadline6.dll
+│       │   ├── libreadline8.dll
+│       │   ├── librtmp-1.dll
+│       │   ├── libssh2-1.dll
+│       │   ├── libssl-1_1-x64.dll
+│       │   ├── libssl-1_1.dll
+│       │   ├── libtasn1-6.dll
+│       │   ├── libtermcap-0.dll
+│       │   ├── libunistring-2.dll
+│       │   ├── libusb-1.0.dll
+│       │   ├── libusb0.dll
+│       │   ├── libusbmuxd-2.0.dll
+│       │   ├── libusbmuxd.dll
+│       │   ├── libwinpthread-1.dll
+│       │   ├── libxml2-2.dll
+│       │   ├── libxml2.dll
+│       │   ├── libzip-4.dll
+│       │   ├── libzip.dll
+│       │   ├── lzma.dll
+│       │   ├── pb.dll
+│       │   ├── pcre.dll
+│       │   ├── pcreposix.dll
+│       │   ├── plist.dll
+│       │   ├── plist_cmp.exe
+│       │   ├── plist_test.exe
+│       │   ├── plistutil.exe
+│       │   ├── pthreadVC3.dll
+│       │   ├── readline.dll
+│       │   ├── ssleay32.dll
+│       │   ├── usbmuxd.dll
+│       │   ├── usbmuxd.exe
+│       │   ├── vcruntime140.dll
+│       │   ├── win-plutil.exe
+│       │   ├── zip.dll
+│       │   └── zlib1.dll
+│       └── README.md
+├── Cargo.lock
+├── Cargo.toml
+├── EOF
+├── Makefile
+├── README.md
+├── chimera
+├── final_fix.py
+├── fix_chimera_build.py
+└── rust-toolchain.toml

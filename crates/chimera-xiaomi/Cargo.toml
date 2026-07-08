@@ -1,0 +1,20 @@
+[package]
+name = "chimera-xiaomi"
+version = "1.0.0"
+edition = "2021"
+
+[dependencies]
+chimera-core = { path = "../chimera-core" }
+chimera-adb = { path = "../chimera-adb" }
+chimera-edl = { path = "../chimera-edl" }
+chimera-fastboot = { path = "../chimera-fastboot" }
+rusb = { workspace = true }
+serde = { workspace = true }
+log = { workspace = true }
+bytes = { workspace = true }
+byteorder = { workspace = true }
+hex = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+async-trait = "0.1"
+base64 = { workspace = true }

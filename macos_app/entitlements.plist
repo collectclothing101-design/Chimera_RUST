@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <!-- App Sandbox: enabled by default; relax selectively below. -->
+  <key>com.apple.security.app-sandbox</key>
+  <true/>
+
+  <!-- User-selected file read/write for IPSW + firmware operations. -->
+  <key>com.apple.security.files.user-selected.read-write</key>
+  <true/>
+
+  <!-- Downloads dir: writable for fetched firmware. -->
+  <key>com.apple.security.files.downloads.read-write</key>
+  <true/>
+
+  <!-- USB device access for libusb-based transports (EDL, BROM, DFU). -->
+  <key>com.apple.security.device.usb</key>
+  <true/>
+
+  <!-- Outgoing TCP for ADB server, ipsw.me, firmware repositories. -->
+  <key>com.apple.security.network.client</key>
+  <true/>
+
+  <!-- Incoming TCP for ADB-over-TCP discovery + pairing. -->
+  <key>com.apple.security.network.server</key>
+  <true/>
+
+  <!-- JIT for WKWebView's JS engine. -->
+  <key>com.apple.security.cs.allow-jit</key>
+  <true/>
+
+  <!-- Hardened-runtime entitlements (required for notarisation). -->
+  <key>com.apple.security.cs.disable-library-validation</key>
+  <true/>
+</dict>
+</plist>

@@ -1,0 +1,18 @@
+[package]
+name = "chimera-motorola"
+version = "1.3.0"
+edition = "2021"
+description = "Motorola device support for ChimeraRS — macOS 10.14.6+ x86_64"
+
+[dependencies]
+chimera-core    = { path = "../chimera-core" }
+chimera-adb     = { path = "../chimera-adb" }
+chimera-fastboot = { path = "../chimera-fastboot" }
+rusb        = { workspace = true }
+serde       = { workspace = true }
+log         = { workspace = true }
+bytes       = { workspace = true }
+byteorder   = { workspace = true }
+hex         = { workspace = true }
+thiserror   = { workspace = true }
+anyhow      = { workspace = true }

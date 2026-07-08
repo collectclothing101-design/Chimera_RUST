@@ -1,0 +1,49 @@
+[package]
+name        = "chimera-ffi"
+version     = "1.0.0"
+edition     = "2021"
+description = "C-ABI FFI surface exposing the ChimeraRS engine to Swift / macOS"
+
+[lints.rust]
+dead_code = "allow"
+
+[lib]
+name       = "chimera_ffi"
+# staticlib  → linked into the macOS .app at build time
+# cdylib     → dynamic loading + dlopen for tooling
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[features]
+default      = []
+# Embed the pttpro local mock server inside the FFI binary so the GUI can
+# do offline development without standing up a real tenant.
+pttpro-mock  = ["chimera-pttpro/mock"]
+
+[dependencies]
+chimera-core     = { path = "../chimera-core" }
+chimera-adb      = { path = "../chimera-adb" }
+chimera-apple    = { path = "../chimera-apple" }
+chimera-utils    = { path = "../chimera-utils" }
+chimera-imobile  = { path = "../chimera-imobile" }
+chimera-purple   = { path = "../chimera-purple" }
+chimera-samsung  = { path = "../chimera-samsung" }
+chimera-zebra    = { path = "../chimera-zebra" }
+chimera-pttpro   = { path = "../chimera-pttpro", features = ["bulk"] }
+chimera-fastboot = { path = "../chimera-fastboot" }
+chimera-xiaomi   = { path = "../chimera-xiaomi" }
+chimera-huawei   = { path = "../chimera-huawei" }
+chimera-edl      = { path = "../chimera-edl" }
+
+serde            = { workspace = true, features = ["derive"] }
+serde_json       = { workspace = true }
+crossbeam-channel = { workspace = true }
+tracing          = { workspace = true }
+tracing-subscriber = { workspace = true }
+tokio            = { workspace = true }
+uuid             = { workspace = true }
+once_cell        = "1"
+parking_lot      = "0.12"
+base64           = "0.22"
+
+[build-dependencies]
+cbindgen         = "0.29"

@@ -1,0 +1,15 @@
+UTC: 2026-04-08 14:40:24 UTC
+PWD: /Volumes/LEXAR1/Chimera_RUST
+uname: Darwin johndoes-MacBook-Pro.local 18.7.0 Darwin Kernel Version 18.7.0: Tue Aug 20 16:57:14 PDT 2019; root:xnu-4903.271.2~2/RELEASE_X86_64 x86_64
+arch: x86_64
+PATH: /opt/local/sbin:/Users/johndoe/.bun/bin:/Library/Developer/CommandLineTools/SDKs:/usr/local/bin:/Users/johndoe/.nvm/versions/node/v18.19.0/bin:/Users/johndoe/.local/bin:/Users/johndoe/.npm-packages/bin:/Users/johndoe/.gem/bin:/Users/johndoe/go/bin:/Users/johndoe/.cargo/bin:/Users/johndoe/.cargo/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/Frameworks/Python.framework/Versions/3.10/bin:/opt/local/bin
+PKG_CONFIG_PATH: /opt/local/lib/pkgconfig:/opt/local/share/pkgconfig:/usr/local/lib/pkgconfig:/usr/local/share/pkgconfig:/usr/local/opt/libusb/lib/pkgconfig:/usr/local/opt/libusb/lib/pkgconfig:/usr/local/opt/openssl@3/lib/pkgconfig:/usr/local/lib/pkgconfig
+ProductName:	Mac OS X
+ProductVersion:	10.14.6
+BuildVersion:	18G103
+/Library/Developer/CommandLineTools
+./scripts/certify-path-a-macos.sh: line 114: /usr/bin/xcodebuild: Bad CPU type in executable
+/usr/local/bin/brew
+/opt/local/bin/port
+/Library/Frameworks/Python.framework/Versions/3.10/bin/pkg-config
+/Library/Frameworks/Python.framework/Versions/3.10/bin/pkgconf

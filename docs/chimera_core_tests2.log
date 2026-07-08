@@ -1,0 +1,33 @@
+   Compiling thiserror v1.0.69
+   Compiling rusb v0.9.4
+   Compiling uuid v1.22.0
+   Compiling crossbeam-channel v0.5.15
+   Compiling rand v0.8.5
+   Compiling toml v0.8.23
+   Compiling sha1 v0.10.6
+   Compiling sha2 v0.10.9
+   Compiling md-5 v0.10.6
+   Compiling async-trait v0.1.89
+   Compiling log v0.4.29
+   Compiling chimera-core v1.1.0 (/home/user/crates/chimera-core)
+    Finished `test` profile [optimized + debuginfo] target(s) in 24.52s
+     Running unittests src/lib.rs (target-linux-lite/x86_64-unknown-linux-gnu/debug/deps/chimera_core-52ed59c55fa7b229)
+
+running 8 tests
+test crypto::tests::test_sha256 ... ok
+test crypto::tests::test_encrypt_decrypt ... ok
+test imei::tests::test_complete_imei ... ok
+test imei::tests::test_format_imei ... ok
+test imei::tests::test_validate_imei ... ok
+test mac_address::tests::test_derive_mac ... ok
+test mac_address::tests::test_format_mac ... ok
+test mac_address::tests::test_validate_mac ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests chimera_core
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
