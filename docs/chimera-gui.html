@@ -1306,7 +1306,50 @@ body{min-width:320px}
 
 
 
-/* ── EVENT LOG PAGE — comprehensive fix ─────────────── */
+/* ── Jailbreak Page Options — fix vertical text and overlapping ────── */
+.jb-opt{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04);
+  gap:12px;
+}
+.jb-opt:last-child{border-bottom:none}
+.jb-opt-hd{flex:1;min-width:0}
+.jb-opt-lbl{font-size:11px;color:var(--t0);letter-spacing:.01em;line-height:1.5}
+.jb-opt-sub{font-size:9px;color:var(--t2);margin-top:3px;line-height:1.5}
+.jb-hash-block{
+  margin-top:8px;padding:8px 10px;
+  background:rgba(0,0,0,.2);border-radius:6px;
+  font-family:var(--fm);font-size:9px;
+}
+.jb-hash-row{
+  display:flex;gap:8px;align-items:baseline;
+  padding:3px 0;line-height:1.6;
+}
+.jb-hash-algo{
+  color:var(--A);font-weight:700;min-width:52px;
+  font-size:8px;letter-spacing:.06em;text-transform:uppercase;
+}
+.jb-hash-val{
+  color:var(--t2);word-break:break-all;
+  font-size:8.5px;line-height:1.5;
+}
+
+/* ── Console / Log overflow fix ──────────────────────────────────── */
+#con{
+  height:auto;min-height:80px;max-height:160px;
+  overflow-y:auto;
+}
+#con .ch-body{
+  overflow-y:auto;max-height:120px;
+  scrollbar-width:thin;
+}
+#con .ll{
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+/* ── Event Log Page — comprehensive fix ─────────────── */
 
 /* Outer container */
 #pg-evlog .cflat{
