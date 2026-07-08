@@ -33,6 +33,7 @@ chimera-fastboot = { path = "../chimera-fastboot" }
 chimera-xiaomi   = { path = "../chimera-xiaomi" }
 chimera-huawei   = { path = "../chimera-huawei" }
 chimera-edl      = { path = "../chimera-edl" }
+chimera-devices  = { path = "../chimera-devices" }
 
 serde            = { workspace = true, features = ["derive"] }
 serde_json       = { workspace = true }

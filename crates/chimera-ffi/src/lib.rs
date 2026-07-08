@@ -645,7 +645,7 @@ fn handle_request(req: Request) -> Response {
                 Ok(list) => {
                     let devices: Vec<_> = list.iter().map(|d| {
                         // Detect brand from model string
-                        let brand = detect_brand_from_model(&d.model);
+                        let brand = detect_brand_from_model(d.model.as_deref().unwrap_or(""));
                         let mode = match d.state.as_str() {
                             "bootloader" => "Fastboot",
                             "recovery" => "Recovery",

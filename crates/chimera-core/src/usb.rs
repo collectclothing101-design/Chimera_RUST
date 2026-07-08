@@ -309,6 +309,86 @@ pub fn is_known_device(vid: u16, pid: u16) -> bool {
     lookup_device(vid, pid).is_some()
 }
 
+/// Get description for a VID (vendor name lookup).
+pub fn vid_description(vid: u16) -> &'static str {
+    match vid {
+        0x05AC => "Apple",
+        0x04E8 => "Samsung",
+        0x18D1 => "Google",
+        0x2717 => "Xiaomi",
+        0x12D1 => "Huawei",
+        0x22B8 => "Motorola",
+        0x1004 => "LG",
+        0x0BB4 => "HTC",
+        0x0FCE => "Sony",
+        0x0E8D => "MediaTek",
+        0x1782 => "Unisoc",
+        0x05C6 => "Qualcomm",
+        0x22D9 => "OPPO/Realme",
+        0x2D95 => "Vivo",
+        0x2A70 => "OnePlus",
+        0x0421 => "Nokia",
+        0x19D2 => "ZTE/Nubia",
+        0x17EF => "Lenovo",
+        0x0B05 => "ASUS",
+        0x2A45 => "Meizu",
+        0x2BC5 => "Nothing",
+        0x2D67 => "Fairphone",
+        0x1BBB => "TCL/Alcatel",
+        0x2A96 => "Infinix/Tecno",
+        0x0FCA => "BlackBerry",
+        0x2353 => "Blackview",
+        0x1F3A => "Doogee",
+        0x2207 => "Ulefone",
+        0x109B => "Hisense",
+        0x2249 => "BLU",
+        _ => "Unknown",
+    }
+}
+
+/// Check if a VID/PID pair is a Qualcomm EDL device.
+pub fn is_edl_device(vid: u16, pid: u16) -> bool {
+    matches!((vid, pid),
+        (0x05C6, 0x9008) | (0x05C6, 0x900E) | (0x05C6, 0x9091) |
+        (0x05C6, 0x90DB) | (0x05C6, 0xF000) | (0x05C6, 0x9006) |
+        (0x05C6, 0x9007) | (0x05C6, 0x900C) | (0x05C6, 0x9025) |
+        (0x05C6, 0x9027) | (0x2A70, 0x9008) | (0x1EBF, 0x0001) |
+        (0x22D9, 0x276D) | (0x2D95, 0x6002)
+    )
+}
+
+/// Check if a VID/PID pair is a MediaTek BROM device.
+pub fn is_mtk_brom(vid: u16, pid: u16) -> bool {
+    vid == 0x0E8D && matches!(pid,
+        0x0001 | 0x0002 | 0x0003 | 0x2000 | 0x2001 | 0x2002 |
+        0x201C | 0x201D | 0x2020
+    )
+}
+
+/// Get the connection mode description as a human-readable string.
+pub fn mode_description(mode: &ConnectionMode) -> &'static str {
+    match mode {
+        ConnectionMode::Adb => "ADB (Normal)",
+        ConnectionMode::Fastboot => "Fastboot (Bootloader)",
+        ConnectionMode::Edl => "EDL (Emergency Download)",
+        ConnectionMode::DownloadOdin => "Odin (Samsung Download)",
+        ConnectionMode::SamsungEub => "EUB (Exynos USB Boot)",
+        ConnectionMode::MtkBootRom => "MTK BootROM",
+        ConnectionMode::UnisocBrom => "Unisoc BROM",
+        ConnectionMode::AppleUsbMux => "USB-MUX (iOS Normal)",
+        ConnectionMode::AppleDfu => "DFU (Device Firmware Upgrade)",
+        ConnectionMode::AppleRestore => "Restore Mode",
+        ConnectionMode::AppleRecovery => "Recovery Mode",
+        ConnectionMode::ApplePongoOs => "PongoOS (checkm8)",
+        ConnectionMode::AppleWtf => "WTF Mode",
+        ConnectionMode::HuaweiFastboot => "Huawei Factory Fastboot",
+        ConnectionMode::MiAssistant => "Mi-Assistant (Sideload)",
+        ConnectionMode::Serial => "Serial/Service Mode",
+        ConnectionMode::Unknown => "Unknown",
+        _ => "Other",
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
