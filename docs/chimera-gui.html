@@ -1623,7 +1623,7 @@ body{min-width:320px}
         <div class="kk">Build timestamp</div><div class="vv mo">2026-03-31 · 14:39:08 UTC</div>
         <div class="kk">Architecture</div><div class="vv">macOS · x86_64-apple-darwin</div>
         <div class="kk">Worker pool</div><div class="vv G">Running</div>
-        <div class="kk">ADB daemon</div><div class="vv A">Not found in PATH</div>
+        <div class="kk">ADB daemon</div><div class="vv G">/usr/local/bin/adb</div>
         <div class="kk kv-e">libusb</div><div class="vv G kv-e">v0.9.4 — linked</div>
       </div>
     </div>
@@ -1653,7 +1653,7 @@ body{min-width:320px}
   <div class="ph"><div><div class="ph-idx">02 · WORKSPACE</div><div class="pt">Devices</div><div class="ps">Connected and discovered devices across all transports</div></div><div class="pa"><button class="btn bs bxs sh" onclick="doScan()">⟳ Refresh</button><button class="btn bp bxs sh sh-a">+ Manual</button></div></div>
   <div class="ts"><div class="tab sh on" onclick="stab(this,'dv',0)">USB</div><div class="tab sh" onclick="stab(this,'dv',1)">ADB</div><div class="tab sh" onclick="stab(this,'dv',2)">Fastboot</div><div class="tab sh" onclick="stab(this,'dv',3)">EDL · Download</div><div class="tab sh" onclick="stab(this,'dv',4)">Apple USB-MUX</div></div>
   <div id="dv0"><div class="empty"><div class="e-ico">⊡</div><div class="e-t">No USB Devices Detected</div><div class="e-s">Connect a device via USB cable. Enable USB debugging on Android; authorise this computer on Apple devices.</div></div></div>
-  <div id="dv1" class="hidden"><div class="note ni2 sm mb10">ADB daemon not found in PATH — install via <span class="mo">brew install android-platform-tools</span></div><div class="empty"><div class="e-ico">◈</div><div class="e-t">ADB Unavailable</div><div class="e-s">Configure ADB binary path in Settings → ADB · Paths, then reconnect.</div></div></div>
+  <div id="dv1" class="hidden"><div class="note nk sm mb10">ADB daemon running — <span class="mo">/usr/local/bin/adb</span></div><div class="empty"><div class="e-ico">◈</div><div class="e-t">No ADB Devices</div><div class="e-s">Connect an Android device via USB with USB debugging enabled.</div></div></div>
   <div id="dv2" class="hidden"><div class="empty"><div class="e-ico">⚡</div><div class="e-t">No Fastboot Devices</div><div class="e-s">Boot device into Fastboot mode (Vol– + Power), then connect via USB.</div></div></div>
   <div id="dv3" class="hidden"><div class="note nw sm mb10">Qualcomm EDL requires device in 9008 Download Mode with appropriate host-side USB driver installed.</div><div class="empty"><div class="e-ico">↓</div><div class="e-t">No EDL · Download Devices</div><div class="e-s">Hold Vol+ + Vol– during power-on, or use a hardware test-point to force EDL on Qualcomm targets.</div></div></div>
   <div id="dv4" class="hidden"><div class="empty"><div class="e-ico">⌘</div><div class="e-t">No Apple Devices</div><div class="e-s">Connect iPhone or iPad via USB. Tap "Trust This Computer" when prompted on the device.</div></div></div>
